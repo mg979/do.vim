@@ -1,0 +1,112 @@
+*vim-do.txt*    vim-do     Version 0.1.0    Last change: August 11 2018
+
+VIM-DO                                                     *vim-do*
+==============================================================================
+
+This plugin is more an idea than anything else. It is essentially a bunch of
+remaps that start with 'do'.
+
+These commands are included, but you can start with an empty set:
+
+'dods' ->  do diff with saved
+'dodl' ->  do diff with last git revision
+'dorc' ->  do redir command (command output to new buffer)
+'dore' ->  do redir expression (expression to new buffer)
+'dows' ->  do trim whitespaces
+'dovp' ->  do vim profiling (first time activates, second time stops and quits)
+
+'dO'   ->  show all do's
+
+The concept is to have a group of commands that `do something`, in a way that
+it makes it easy to remember their mappings, and that you can show by typing `dO`.
+
+
+
+OPTIONS                                                         *vim-do-options*
+==============================================================================
+
+If you don't want the default commands:
+>
+  let g:vimdo_use_default_commands = 0
+
+If you want vim-do to make <Plug> mappings:
+>
+  let g:vimdo_make_plugs = 1
+
+
+
+GROUPS                                                           *vim-do-groups*
+==============================================================================
+
+If you want to add/override commands, make a new dictionary:
+>
+  let g:vimdo       = {}
+  let g:vimdo.KEY   = a_new_command
+
+Typing `dO` will show mappings in the main group. You can make other groups,
+that will be shown independently, if you make a mapping for them:
+>
+  let g:vimdo_groups       = { 'g': {} }
+  let g:vimdo_groups.g.KEY = a_new_command
+
+  nnoremap do\g         :call do#do#show_all_dos('g')<cr>
+
+Note: same KEY in different groups will result in the same mapping, and will
+overwrite each other. Groups are processed in alphabetic order.
+
+
+
+DEFAULT MAPPINGS                                                *vim-do-default*
+==============================================================================
+
+This is the dict with the default commands. If you don't want defaults, but
+want some of them, add them to your `g:vimdo` dict:
+>
+  let g:vimdo = {
+        \ 'ws': ['trim whitespaces',    ':call do#trim_whitespaces()<cr>'   ],
+        \ 're': ['redir expression',    ':call do#redir_expression()<cr>'   ],
+        \ 'rc': ['redir command',       ':RedirCommand<space>'              ],
+        \ 'vp': ['profiling',           ':call do#profiling()<cr>'          ],
+        \ 'ds': ['diff with saved',     ':call do#diff_with_saved()<cr>'    ],
+        \ 'dl': ['diff last revision',  ':call do#diff_last_revision()<cr>' ],
+        \}
+
+These are some extra commands I use:
+>
+  let g:vimdo.rf = ['reindent file',    'mzgg=G`z']
+  let g:vimdo.ca = ['copy all',         ':%y+<cr>']
+  let g:vimdo.sa = ['select all',       'ggVG']
+
+
+
+DEFINE A NEW MAPPING                                            *vim-do-mapping*
+==============================================================================
+
+This is the structure of the g:vimdo dictionary (or of any group):
+>
+    {
+      trigger: [name, rhs, options],
+      ...
+    }
+
+By default, built mappings are non-recursive, and just plain simple:
+
+  nnoremap <trigger> <rhs>
+
+'trigger'  is the mapping after 'do'
+'name'     is the string for `show all do's`, and how the plug will be named
+'rhs'      is the {rhs} of the generated mapping.
+'options'  is optional, and is a string
+
+'options' is a sequence of characters and can contain:
+  - `r` mapping is recursive
+  - `e` is <expr>
+  - `s` is <silent>
+  - `m` is 'map' and not 'nmap'
+  - `x` is 'xmap'
+  - `v` is 'vmap'
+  - `o` is 'omap'
+
+If 'options' were ='xres', mapping wuold be:
+
+  xmap <trigger> <silent><expr> <rhs>
