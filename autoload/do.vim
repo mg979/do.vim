@@ -53,6 +53,24 @@ fun! s:put_current()
   diffthis
 endfun
 
+fun! do#diff_with_other()
+  if len(tabpagebuflist()) != 2
+    return s:msg("There must be exactly 2 buffers in the tab page") | endif
+  if !&diff
+    diffthis
+    wincmd w
+    diffthis
+    wincmd w
+    call s:msg("Diff on (call again to turn off)", 1)
+  else
+    diffoff
+    wincmd w
+    diffoff
+    wincmd w
+    call s:msg("Diff turned off")
+  endif
+endfun
+
 fun! do#diff_with_saved()
   let f = s:get_current_file()
   call s:put_current()
@@ -125,6 +143,7 @@ fun! do#show_all_dos(...)
   let dos = a:0 && has_key(g:vimdo_groups, a:1) ? g:vimdo_groups[a:1] : g:vimdo
   echo sep
   for do in sort(keys(dos))
+    if do ==? 'prefix'  || do ==? 'show_cmd'| continue | endif
     echohl WarningMsg | echo do."\t"
     echohl Special    | echon s:pad(dos[do][0], 40)
     echohl None       | echon dos[do][1]

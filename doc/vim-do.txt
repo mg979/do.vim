@@ -33,26 +33,15 @@ If you want vim-do to make <Plug> mappings:
 >
   let g:vimdo_make_plugs = 1
 
-
-
-GROUPS                                                           *vim-do-groups*
-==============================================================================
-
 If you want to add/override commands, make a new dictionary:
 >
   let g:vimdo       = {}
   let g:vimdo.KEY   = a_new_command
 
-Typing `dO` will show mappings in the main group. You can make other groups,
-that will be shown independently, if you make a mapping for them:
->
-  let g:vimdo_groups       = { 'g': {} }
-  let g:vimdo_groups.g.KEY = a_new_command
+Typing `dO` will show mappings in the main `vimdo` dictionary.
 
-  nnoremap do\g         :call do#do#show_all_dos('g')<cr>
-
-Note: same KEY in different groups will result in the same mapping, and will
-overwrite each other. Groups are processed in alphabetic order.
+The main dictionary (`g:vimdo`) is designed to be simple, and uses `do`
+as prefix. See |vim-do-groups| for more options.
 
 
 
@@ -76,13 +65,16 @@ These are some extra commands I use:
   let g:vimdo.rf = ['reindent file',    'mzgg=G`z']
   let g:vimdo.ca = ['copy all',         ':%y+<cr>']
   let g:vimdo.sa = ['select all',       'ggVG']
+  let g:vimdo.jpp = ['json pretty print',    ':%!python -m json.tool<cr>'    ]
+  let g:vimdo.ot  = ['open with thunar',    ':!thunar . &<cr><cr>'    ]
+  let g:vimdo.tm  = ['table mode',    ':setlocal noexpandtab tabstop=15 shiftwidth=15 softtabstop=15 nowrap<cr>']
 
 
 
 DEFINE A NEW MAPPING                                            *vim-do-mapping*
 ==============================================================================
 
-This is the structure of the g:vimdo dictionary (or of any group):
+This is the structure of a command in the g:vimdo dictionary (or in any group):
 >
     {
       trigger: [name, rhs, options],
@@ -110,3 +102,29 @@ By default, built mappings are non-recursive, and just plain simple:
 If 'options' were ='xres', mapping wuold be:
 
   xmap <trigger> <silent><expr> <rhs>
+
+
+
+GROUPS                                                           *vim-do-groups*
+==============================================================================
+
+The default group uses 'do' as prefix. You can change it by setting:
+>
+  let g:vimdo_prefix = 'do'
+
+You can make other groups that can use different triggers, and that will
+be shown independently:
+>
+  let g:vimdo_groups              = { 'git': {} }
+  let g:vimdo_groups.git.prefix   = 'dg'
+  let g:vimdo_groups.git.show_cmd = 'dgO'
+  let g:vimdo_groups.git.KEY      = a_new_command
+
+`prefix` is the first part of the mapping. `show_cmd` is the full mapping of
+the command to show the group's mappings.
+
+Note: same KEY in different groups will result in the same mapping, and will
+overwrite each other, if they also share the same prefix.
+Groups are processed in alphabetic order.
+
+
