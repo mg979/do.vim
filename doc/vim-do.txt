@@ -52,13 +52,15 @@ This is the dict with the default commands. If you don't want defaults, but
 want some of them, add them to your `g:vimdo` dict:
 >
   let g:vimdo = {
-        \ 'ws': ['trim whitespaces',    ':call do#trim_whitespaces()<cr>'   ],
-        \ 're': ['redir expression',    ':call do#redir_expression()<cr>'   ],
-        \ 'rc': ['redir command',       ':RedirCommand<space>'              ],
-        \ 'vp': ['profiling',           ':call do#profiling()<cr>'          ],
-        \ 'ds': ['diff with saved',     ':call do#diff_with_saved()<cr>'    ],
-        \ 'dl': ['diff last revision',  ':call do#diff_last_revision()<cr>' ],
-        \}
+      \ 'ws':  ['trim whitespaces',             ':call do#trim_whitespaces()<cr>'  ],
+      \ 're':  ['redir expression',             ':call do#redir_expression()<cr>'  ],
+      \ 'rc':  ['redir command',                ':RedirCommand<space>'             ],
+      \ 'vp':  ['profiling',                    ':call do#profiling()<cr>'         ],
+      \ 'ds':  ['diff saved',                   ':call do#diff_with_saved()<cr>'   ],
+      \ 'do':  ['diff other',                   ':call do#diff_with_other()<cr>'   ],
+      \ 'dl':  ['diff last revision',           ':call do#diff_last_revision()<cr>'],
+      \ 'ssa': ['show syntax attributes',       ':call do#syntax_attr()<cr>'       ],
+      \}
 
 These are some extra commands I use:
 >
@@ -67,7 +69,7 @@ These are some extra commands I use:
   let g:vimdo.sa = ['select all',       'ggVG']
   let g:vimdo.jpp = ['json pretty print',    ':%!python -m json.tool<cr>'    ]
   let g:vimdo.ot  = ['open with thunar',    ':!thunar . &<cr><cr>'    ]
-  let g:vimdo.tm  = ['table mode',    ':setlocal noexpandtab tabstop=15 shiftwidth=15 softtabstop=15 nowrap<cr>']
+  let g:vimdo.tm  = ['table mode',    ':setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>']
 
 
 
@@ -127,4 +129,5 @@ Note: same KEY in different groups will result in the same mapping, and will
 overwrite each other, if they also share the same prefix.
 Groups are processed in alphabetic order.
 
-
+==============================================================================
+vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:
