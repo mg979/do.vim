@@ -35,6 +35,8 @@ endfun
 " Diff commands {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+let s:diffed_buffers = []
+
 fun! s:get_current_file()
   let s:T = tabpagenr()
   let f = expand("%:p")
@@ -42,62 +44,84 @@ fun! s:get_current_file()
   return f
 endfun
 
-fun! s:put_current()
-  call s:store_reg()
-  %y"
-  tabnew
-  put = @"
-  normal! 1Gdd
-  exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . s:filetype
-  nnoremap <buffer><silent><nowait> q :tabclose<cr>:exe "normal! ".<sid>Tab()."gt"<cr>
+fun! s:Tab()
+  call s:diff_unmap()
+  tabclose
+  return s:T
+endfun
+
+fun! s:diff_map()
   diffthis
+  call add(s:diffed_buffers, (bufnr("%")))
+  nnoremap <buffer><silent><nowait> q :exe "normal! ".<sid>Tab()."gt"<cr>
+  nnoremap <buffer><silent><nowait> ] ]c
+  nnoremap <buffer><silent><nowait> [ [c
+  nnoremap <buffer><silent><nowait> do do
+  nnoremap <buffer><silent><nowait> dp dp
+endfun
+
+fun! s:diff_unmap()
+  for buf in s:diffed_buffers
+    silent! exe "b ".buf
+    silent! unmap <buffer> q
+    silent! unmap <buffer> ]
+    silent! unmap <buffer> [
+    silent! unmap <buffer> do
+    silent! unmap <buffer> dp
+    diffoff
+  endfor
+  let s:diffed_buffers = []
 endfun
 
 fun! do#diff_with_other()
-  if len(tabpagebuflist()) != 2
-    return s:msg("There must be exactly 2 buffers in the tab page") | endif
-  if !&diff
-    diffthis
-    wincmd w
-    diffthis
-    wincmd w
-    call s:msg("Diff on (call again to turn off)", 1)
-  else
-    diffoff
-    wincmd w
-    diffoff
-    wincmd w
-    call s:msg("Diff turned off")
-  endif
-endfun
-
-fun! do#diff_with_saved()
+  if len(tabpagebuflist()) < 2
+    return s:msg("There must be at least 2 buffers in the tab page") | endif
   let f = s:get_current_file()
-  call s:put_current()
-  vnew | exe "r" f | normal! 1Gdd
-  diffthis
-  exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . s:filetype
-  nnoremap <buffer><silent><nowait> q :tabclose<cr>:exe "normal! ".<sid>Tab()."gt"<cr>
-  call s:restore_reg()
+  wincmd w
+  let f2 = s:get_current_file()
+  wincmd p
+  if f == f2
+    return do#diff_with_saved()
+  endif
+  exe "tabedit" f
+  call s:diff_map()
+  exe "vs ".f2
+  call s:diff_map()
+  wincmd p
   redraw!
-  call s:msg("q: go back", 1)
+  call s:msg("q: back, ]: next change, [: previous change, do: diffget, dp: diffput", 1)
 endfun
 
 fun! do#diff_last_revision()
   if !exists('g:loaded_fugitive') | return s:msg("vim-fugitive is needed.") | endif
   let f = s:get_current_file()
 
-  if empty(FugitiveHead()) | return s:msg("not a git repo.")
-  elseif !s:is_tracked(f)  | return s:msg("not a tracked file.") | endif
+  if empty(FugitiveStatusline()) | return s:msg("not a git repo.")
+  elseif !s:is_tracked(f)        | return s:msg("not a tracked file.") | endif
 
   exe "tabedit" f
-  nnoremap <buffer><silent><nowait> q :tabclose<cr>:exe "normal! ".<sid>Tab()."gt"<cr>
+  call s:diff_map()
   Gvdiff
-  wincmd x
-  nnoremap <buffer><silent><nowait> q :tabclose<cr>:exe "normal! ".<sid>Tab()."gt"<cr>
-
+  wincmd w
+  call s:diff_map()
+  wincmd h
+  if expand("%:p") != f
+    wincmd x
+  endif
   redraw!
-  call s:msg("q: go back", 1)
+  call s:msg("q: back, ]: next change, [: previous change, do: diffget, dp: diffput", 1)
+endfun
+
+fun! do#diff_with_saved()
+  let f = s:get_current_file()
+  exe "tabedit" f
+  call s:diff_map()
+  vnew | exe "r" f | normal! 1Gdd
+  exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . s:filetype
+  call s:diff_map()
+  wincmd x
+  redraw!
+  call s:msg("q: back, ]: next change, [: previous change", 1)
 endfun
 
 
@@ -266,9 +290,5 @@ fun! s:msg(m, ...)
   if a:0   | echohl Special
   else     | echohl WarningMsg | endif
   echo a:m | echohl None
-endfun
-
-fun! s:Tab()
-  return s:T
 endfun
 
