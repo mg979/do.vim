@@ -55,6 +55,7 @@ want some of them, add them to your `g:vimdo` dict:
       \ 'ws':  ['trim whitespaces',             ':call do#trim_whitespaces()<cr>'  ],
       \ 're':  ['redir expression',             ':call do#redir_expression()<cr>'  ],
       \ 'rc':  ['redir command',                ':RedirCommand<space>'             ],
+      \ 'ut':  ['update tags',                  ':call do#update_tags()<cr>'       ],
       \ 'vp':  ['profiling',                    ':call do#profiling()<cr>'         ],
       \ 'ds':  ['diff saved',                   ':call do#diff_with_saved()<cr>'   ],
       \ 'do':  ['diff other',                   ':call do#diff_with_other()<cr>'   ],
@@ -62,14 +63,13 @@ want some of them, add them to your `g:vimdo` dict:
       \ 'ssa': ['show syntax attributes',       ':call do#syntax_attr()<cr>'       ],
       \}
 
-These are some extra commands I use:
+Commands examples:
 >
-  let g:vimdo.rf = ['reindent file',    'mzgg=G`z']
-  let g:vimdo.ca = ['copy all',         ':%y+<cr>']
-  let g:vimdo.sa = ['select all',       'ggVG']
-  let g:vimdo.jpp = ['json pretty print',    ':%!python -m json.tool<cr>'    ]
-  let g:vimdo.ot  = ['open with thunar',    ':!thunar . &<cr><cr>'    ]
-  let g:vimdo.tm  = ['table mode',    ':setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>']
+  let g:vimdo.rf  = ['reindent file',     'mzgg=G`z']
+  let g:vimdo.ca  = ['copy all',          ':%y+<cr>']
+  let g:vimdo.sa  = ['select all',        'ggVG']
+  let g:vimdo.jpp = ['json pretty print', ':%!python -m json.tool<cr>']
+  let g:vimdo.tm  = ['table mode',        ':setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>']
 
 
 
@@ -105,6 +105,8 @@ If 'options' were ='xres', mapping wuold be:
 
   xmap <trigger> <silent><expr> <rhs>
 
+Consider that it makes little sense to use 'xmap' in the main dictionary (|d|
+deletes in visual mode).
 
 
 GROUPS                                                           *vim-do-groups*

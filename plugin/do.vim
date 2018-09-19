@@ -6,11 +6,13 @@ let s:default = get(g:, 'vimdo_use_default_commands', 1) ? {
       \ 'ws':  ['trim whitespaces',             ':call do#trim_whitespaces()<cr>'  ],
       \ 're':  ['redir expression',             ':call do#redir_expression()<cr>'  ],
       \ 'rc':  ['redir command',                ':RedirCommand<space>'             ],
+      \ 'ut':  ['update tags',                  ':call do#update_tags()<cr>'       ],
       \ 'vp':  ['profiling',                    ':call do#profiling()<cr>'         ],
       \ 'ds':  ['diff saved',                   ':call do#diff_with_saved()<cr>'   ],
       \ 'do':  ['diff other',                   ':call do#diff_with_other()<cr>'   ],
       \ 'dl':  ['diff last revision',           ':call do#diff_last_revision()<cr>'],
       \ 'ssa': ['show syntax attributes',       ':call do#syntax_attr()<cr>'       ],
+      \ 'fcr': ['find files with CRLF endings', ':call do#find_crlf(1, "")<cr>'    ],
       \} : {}
 
 let g:vimdo = extend(s:default, get(g:, 'vimdo', {}))

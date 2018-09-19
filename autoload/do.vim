@@ -74,18 +74,23 @@ fun! s:diff_unmap()
 endfun
 
 fun! do#diff_with_other()
-  if len(tabpagebuflist()) < 2
-    return s:msg("There must be at least 2 buffers in the tab page") | endif
+  let bufs = tabpagebuflist()
+  if len(bufs) < 2
+    return s:msg("There must be at least 2 buffers in the tab page")
+  endif
   let f = s:get_current_file()
+  let buf1 = bufnr("%")
   wincmd w
   let f2 = s:get_current_file()
+  let buf2 = bufnr("%")
   wincmd p
   if f == f2
     return do#diff_with_saved()
   endif
+  let was_left = index(bufs, buf1) < index(bufs, buf2)
   exe "tabedit" f
   call s:diff_map()
-  exe "vs ".f2
+  exe ( was_left ? "rightbelow " : "" ) . "vs " . f2
   call s:diff_map()
   wincmd p
   redraw!
@@ -161,18 +166,60 @@ endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+fun! do#update_tags()
+  let error = system("ctags -R .")
+  if empty(error)
+    call s:msg("Tags updated.", 1)
+  else
+    call s:msg(error)
+  endif
+endfun
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 fun! do#show_all_dos(...)
   """Show all do commands."""
   let sep = s:repeat_char('-')
   let dos = a:0 && has_key(g:vimdo_groups, a:1) ? g:vimdo_groups[a:1] : g:vimdo
-  echo sep
+  let pre = !a:0 ? 'do' : dos.prefix
+  let lab =  !a:0 ? 'do...' : pre."\t\t".a:1
+  echohl None           | echo sep
+  echohl WarningMsg     | echo lab
+  echohl None           | echo sep
   for do in sort(keys(dos))
     if do ==? 'prefix'  || do ==? 'show_cmd'| continue | endif
-    echohl WarningMsg | echo do."\t"
-    echohl Special    | echon s:pad(dos[do][0], 40)
-    echohl None       | echon dos[do][1]
+    echohl WarningMsg   | echo  s:pad(do, 16)
+    echohl Special      | echon s:pad(dos[do][0], 40)
+    echohl None         | echon dos[do][1]
   endfor
   echo sep
+endfun
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+fun! do#find_crlf(bang, dir)
+  let dir = empty(a:dir) ? '.' : a:dir
+  if !isdirectory(dir)
+    return s:msg("Invalid Directory")
+  elseif fnamemodify('.', ":p") == expand("~") && confirm("This is your home directory!", "&Yes\n&No", 2) != 1
+    return
+  endif
+  let files = systemlist("file $(find . -type f) | grep 'with CRLF' | sed 's#\./##' | sed 's/:.*//'")
+  if empty(files) | return s:msg("No results.") | endif
+  let list = []
+  for file in files
+    call add(list, {'filename': file, 'text': system("file ".file." | sed 's/.*:/ /'"), 'lnum': 1, 'col':1})
+  endfor
+  call setqflist(list)
+  if a:bang && confirm("Autoconvert to LF?", "&Yes\n&No", 2) == 1
+    cfdo set fileformat=unix
+    if confirm("Save all?", "&Yes\n&No", 1) == 1
+      wall
+    endif
+    return
+  endif
+  copen
+  cfirst
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -287,8 +334,8 @@ fun! s:is_tracked(file)
 endfun
 
 fun! s:msg(m, ...)
-  if a:0   | echohl Special
-  else     | echohl WarningMsg | endif
-  echo a:m | echohl None
+  if a:0   | echohl Special     | echo a:m
+  else     | echohl WarningMsg  | echom a:m | endif
+  echohl None
 endfun
 
