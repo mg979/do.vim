@@ -178,19 +178,57 @@ endfun
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! do#show_all_dos(...)
-  """Show all do commands."""
+  if index(['n', 'v', 'V', ''], mode()) < 0
+    return
+  endif
+
+  if !a:0 || empty(a:1)         "default group (do...)
+    let group = g:vimdo.do
+    let pre = 'do'
+    let pat = 'do'
+
+  else                          "other groups
+    let group = has_key(g:vimdo, a:1) ? g:vimdo[a:1] : {}
+    let pre = a:1
+    let pat = escape(pre, '\')
+    let pat = escape(pat, '\')
+  endif
+
   let sep = s:repeat_char('-')
-  let dos = a:0 && has_key(g:vimdo_groups, a:1) ? g:vimdo_groups[a:1] : g:vimdo
-  let pre = !a:0 ? 'do' : dos.prefix
-  let lab =  !a:0 ? 'do...' : pre."\t\t".a:1
+  let lab = has_key(group, 'label') ?  pre."\t\t".group.label : pre
+  let mode = mode() == 'n' ? 'n' : 'x'
+  let cmd = mode.'map '.pre
+  let require_desc = has_key(group, 'require_description') && group.require_description
+
+  redir => dos
+  silent! exe cmd
+  redir END
+
+  let dos = split(dos, '\n')
+  for i in range(len(dos))
+    let dos[i] = substitute(dos[i], 'n  ', '', '')
+    let dos[i] = substitute(dos[i], '\s.*', '', '')
+  endfor
+  call filter(dos, 'v:val =~ "^'.pat.'\\S"')
+  if empty(dos) | return s:msg("No do's") | endif
+  let D = {}
+  for do in dos
+    let d = maparg(do, mode, 0, 1)
+    if match(d.rhs, '^:call do#show_all_dos') == 0
+      continue
+    endif
+    let key = do[strchars(pre):]
+    let desc = has_key(group, key) ? group[key] : ''
+    if empty(desc) && require_desc | continue | endif
+    let D[key] = [desc, d.rhs]
+  endfor
   echohl None           | echo sep
   echohl WarningMsg     | echo lab
   echohl None           | echo sep
-  for do in sort(keys(dos))
-    if do ==? 'prefix'  || do ==? 'show_cmd'| continue | endif
+  for do in sort(keys(D))
     echohl WarningMsg   | echo  s:pad(do, 16)
-    echohl Special      | echon s:pad(dos[do][0], 40)
-    echohl None         | echon dos[do][1]
+    echohl Special      | echon s:pad(D[do][0], 40)
+    echohl None         | echon s:pad(D[do][1], &columns - 60)
   endfor
   echo sep
 endfun

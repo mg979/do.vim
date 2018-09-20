@@ -2,64 +2,38 @@
 " do.vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-let s:default = get(g:, 'vimdo_use_default_commands', 1) ? {
-      \ 'ws':  ['trim whitespaces',             ':call do#trim_whitespaces()<cr>'  ],
-      \ 're':  ['redir expression',             ':call do#redir_expression()<cr>'  ],
-      \ 'rc':  ['redir command',                ':RedirCommand<space>'             ],
-      \ 'ut':  ['update tags',                  ':call do#update_tags()<cr>'       ],
-      \ 'vp':  ['profiling',                    ':call do#profiling()<cr>'         ],
-      \ 'ds':  ['diff saved',                   ':call do#diff_with_saved()<cr>'   ],
-      \ 'do':  ['diff other',                   ':call do#diff_with_other()<cr>'   ],
-      \ 'dl':  ['diff last revision',           ':call do#diff_last_revision()<cr>'],
-      \ 'ssa': ['show syntax attributes',       ':call do#syntax_attr()<cr>'       ],
-      \ 'fcr': ['find files with CRLF endings', ':call do#find_crlf(1, "")<cr>'    ],
+if get(g:, 'vimdo_use_default_commands', 1)
+  nnoremap dows  :call do#trim_whitespaces()<cr>
+  nnoremap dore  :call do#redir_expression()<cr>
+  nnoremap dorc  :RedirCommand<space>
+  nnoremap dout  :call do#update_tags()<cr>
+  nnoremap dovp  :call do#profiling()<cr>
+  nnoremap dods  :call do#diff_with_saved()<cr>
+  nnoremap dodo  :call do#diff_with_other()<cr>
+  nnoremap dodl  :call do#diff_last_revision()<cr>
+  nnoremap dossa :call do#syntax_attr()<cr>
+  nnoremap dofcr :call do#find_crlf(1, "")<cr>
+
+  command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
+endif
+
+let s:default = get(g:, 'vimdo_use_default_commands', 1) ? { 'label': 'do...',
+      \ 'ws':  'trim whitespaces',
+      \ 're':  'redir expression',
+      \ 'rc':  'redir command',
+      \ 'ut':  'update tags',
+      \ 'vp':  'profiling',
+      \ 'ds':  'diff saved',
+      \ 'do':  'diff other',
+      \ 'dl':  'diff last revision',
+      \ 'ssa': 'show syntax attributes',
+      \ 'fcr': 'find files with CRLF endings',
       \} : {}
 
-let g:vimdo = extend(s:default, get(g:, 'vimdo', {}))
-let g:vimdo_groups = get(g:, 'vimdo_groups', {})
+let g:vimdo = get(g:, 'vimdo', {})
+let g:vimdo.do = extend(s:default, get(g:vimdo, 'do', {}))
 
 nnoremap dO :call do#show_all_dos()<cr>
 
-command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
+command! -nargs=?                   ShowDos      call do#show_all_dos(<q-args>)
 
-fun! s:map(K, k, prefix)
-  let [K, k] = [a:K, a:k]
-  let nrm = 'nore' | let lhs = '' | let m   = 'n'
-  let opt = split(get(K, 2, ''), '\zs')
-  if !empty(opt)
-    for op in opt
-      if     op == 'r' | let nrm = ''
-      elseif op == 'e' | let lhs .= '<expr>'
-      elseif op == 's' | let lhs .= '<silent>'
-      elseif op == 'm' | let m = ''
-      elseif op == 'x' | let m = 'x'
-      elseif op == 'o' | let m = 'o'
-      elseif op == 'v' | let m = 'v'
-      endif
-    endfor
-  endif
-
-  if get(g:, 'vimdo_make_plugs', 0)
-    let p = substitute(K[0], '\s', '-', 'g')
-    let plug = '<Plug>(Do-'.p.')'
-    exe "nmap ".a:prefix.k plug
-    exe m.nrm."map" lhs plug K[1]
-  else
-    exe m.nrm."map" lhs a:prefix.k K[1]
-  endif
-endfun
-
-for k in keys(g:vimdo)
-  call s:map(g:vimdo[k], k, get(g:, 'vimdo_prefix', 'do'))
-endfor
-
-for g in sort(keys(g:vimdo_groups))
-  let prefix = has_key(g:vimdo_groups[g], 'prefix') ? g:vimdo_groups[g].prefix : 'do'
-  for k in keys(g:vimdo_groups[g])
-    if k ==? 'prefix' || k ==? 'show_cmd' | continue | endif
-    call s:map(g:vimdo_groups[g][k], k, prefix)
-  endfor
-  if has_key(g:vimdo_groups[g], 'show_cmd') |
-    exe "nnoremap" g:vimdo_groups[g].show_cmd ":call do#show_all_dos('".g."')\<cr>"
-  endif
-endfor
