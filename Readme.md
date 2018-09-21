@@ -1,5 +1,5 @@
 
-## vim-do
+## do.vim
 ------------------------------------------------------------------------------
 
 The concept is to have a group of commands that `do something`, in a way that
@@ -13,7 +13,7 @@ What's the difference between this and just typing `:nmap do`?
 
 - you can set descriptions for each mapping, and the output is more readable.
 - you can filter entries.
-- it can show the file where mapping is defined.
+- it can show the files where mappings are defined (not by default).
 
 But you're not limited to the `do` keyword, you can do the same with any other
 mapping prefix.
@@ -24,9 +24,9 @@ mapping prefix.
 
 With vim-plug:
     
-    Plug 'mg979/vim-do'
+    Plug 'mg979/do.vim'
 
-Documentation: `:help vim-do`
+Documentation: `:help do-vim`
 
 
 ## Is this similar to...

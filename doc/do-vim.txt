@@ -1,6 +1,6 @@
-*vim-do.txt*    vim-do     Version 0.1.0    Last change: September 21 2018
+*do-vim.txt*    do-vim     Version 0.1.0    Last change: September 21 2018
 
-VIM-DO                                                     *vim-do*
+DO.VIM                                                                  *do-vim*
 ==============================================================================
 
 The concept is to have a group of commands that `do something`, in a way that
@@ -21,7 +21,7 @@ mapping prefix.
 
 
 
-OPTIONS                                                         *vim-do-options*
+OPTIONS                                                         *do-vim-options*
 ==============================================================================
 
 If you want the default commands:
@@ -33,11 +33,11 @@ To show the file where the mapping is defined:
   let g:vimdo_show_filename = 1
 
 To extend default group (`do`), see next section.
-To create new groups, see |vim-do-groups|.
+To create new groups, see |do-vim-groups|.
 
 
 
-DEFAULT COMMANDS                                                *vim-do-default*
+DEFAULT COMMANDS                                                *do-vim-default*
 ==============================================================================
 
 This is the dict with the default commands. If you don't want all defaults, but
@@ -85,7 +85,7 @@ To extend default group with some other commands (example):
 
 
 
-GROUPS                                                           *vim-do-groups*
+GROUPS                                                           *do-vim-groups*
 ==============================================================================
 
 An example of creating a new group:
