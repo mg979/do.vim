@@ -1,135 +1,145 @@
-*vim-do.txt*    vim-do     Version 0.1.0    Last change: August 11 2018
+*vim-do.txt*    vim-do     Version 0.1.0    Last change: September 21 2018
 
 VIM-DO                                                     *vim-do*
 ==============================================================================
 
-This plugin is more an idea than anything else. It is essentially a bunch of
-remaps that start with 'do'.
-
-These commands are included, but you can start with an empty set:
-
-'dods' ->  do diff with saved
-'dodl' ->  do diff with last git revision
-'dorc' ->  do redir command (command output to new buffer)
-'dore' ->  do redir expression (expression to new buffer)
-'dows' ->  do trim whitespaces
-'dovp' ->  do vim profiling (first time activates, second time stops and quits)
-
-'dO'   ->  show all do's
-
 The concept is to have a group of commands that `do something`, in a way that
 it makes it easy to remember their mappings, and that you can show by typing `dO`.
+
+There is a set of commands that you can activate, but it will work with any of
+your mappings. All you need to do, is to define some mappings that start with
+`do`, and they will be shown when you type `dO`.
+
+What's the difference between this and just typing `:nmap do`?
+
+- you can set descriptions for each mapping, and the output is more readable.
+- you can filter entries.
+- it can show the file where mapping is defined.
+
+But you're not limited to the `do` keyword, you can do the same with any other
+mapping prefix.
 
 
 
 OPTIONS                                                         *vim-do-options*
 ==============================================================================
 
-If you don't want the default commands:
+If you want the default commands:
 >
-  let g:vimdo_use_default_commands = 0
+  let g:vimdo_use_default_commands = 1
 
-If you want vim-do to make <Plug> mappings:
+To show the file where the mapping is defined:
 >
-  let g:vimdo_make_plugs = 1
+  let g:vimdo_show_filename = 1
 
-If you want to add/override commands, make a new dictionary:
->
-  let g:vimdo       = {}
-  let g:vimdo.KEY   = a_new_command
-
-Typing `dO` will show mappings in the main `vimdo` dictionary.
-
-The main dictionary (`g:vimdo`) is designed to be simple, and uses `do`
-as prefix. See |vim-do-groups| for more options.
+To extend default group (`do`), see next section.
+To create new groups, see |vim-do-groups|.
 
 
 
-DEFAULT MAPPINGS                                                *vim-do-default*
+DEFAULT COMMANDS                                                *vim-do-default*
 ==============================================================================
 
-This is the dict with the default commands. If you don't want defaults, but
-want some of them, add them to your `g:vimdo` dict:
+This is the dict with the default commands. If you don't want all defaults, but
+want some of them, add them to your `vimrc`:
 >
-  let g:vimdo = {
-      \ 'ws':  ['trim whitespaces',             ':call do#trim_whitespaces()<cr>'  ],
-      \ 're':  ['redir expression',             ':call do#redir_expression()<cr>'  ],
-      \ 'rc':  ['redir command',                ':RedirCommand<space>'             ],
-      \ 'ut':  ['update tags',                  ':call do#update_tags()<cr>'       ],
-      \ 'vp':  ['profiling',                    ':call do#profiling()<cr>'         ],
-      \ 'ds':  ['diff saved',                   ':call do#diff_with_saved()<cr>'   ],
-      \ 'do':  ['diff other',                   ':call do#diff_with_other()<cr>'   ],
-      \ 'dl':  ['diff last revision',           ':call do#diff_last_revision()<cr>'],
-      \ 'ssa': ['show syntax attributes',       ':call do#syntax_attr()<cr>'       ],
-      \}
+  nnoremap dows  :call do#cmd#trim_whitespaces()<cr>
+  nnoremap dout  :call do#cmd#update_tags()<cr>
+  nnoremap dovp  :call do#cmd#profiling()<cr>
+  nnoremap dodo  :call do#diff#other()<cr>
+  nnoremap dods  :call do#diff#saved()<cr>
+  nnoremap dodl  :call do#diff#last_revision()<cr>
+  nnoremap dossa :call do#cmd#syntax_attr()<cr>
+  nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
+  nnoremap dore  :call do#cmd#redir_expression()<cr>
+  nnoremap dorc  :RedirCommand<space>
+  command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
 
-Commands examples:
+'dodo'  ->  do diff other file (in next window)
+'dods'  ->  do diff with saved
+'dodl'  ->  do diff with last git revision
+'dorc'  ->  do redir command (command output to new buffer)
+'dore'  ->  do redir expression (expression to new buffer)
+'dows'  ->  do trim whitespaces
+'dout'  ->  do update tags (runs `ctags -R .`)
+'dovp'  ->  do vim profiling (first time activates, second time stops and quits)
+'dossa' ->  do vim profiling (first time activates, second time stops and quits)
+'dofcr' ->  do find CR (mass find/correct files with CRLF line endings in the
+            current working directory)
+
+To extend default group with some other commands (example):
 >
-  let g:vimdo.rf  = ['reindent file',     'mzgg=G`z']
-  let g:vimdo.ca  = ['copy all',          ':%y+<cr>']
-  let g:vimdo.sa  = ['select all',        'ggVG']
-  let g:vimdo.jpp = ['json pretty print', ':%!python -m json.tool<cr>']
-  let g:vimdo.tm  = ['table mode',        ':setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>']
+  nnoremap dorf   m`gg=G``
+  nnoremap doca   :%y+<cr>
+  nnoremap dosa   ggVG
+  nnoremap dojpp  :%!python -m json.tool<cr>
+  nnoremap dotm   :setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>
 
+  let g:vimdo = {'do':
+    \'rf':  'reindent file',
+    \'ca':  'copy all',
+    \'sa':  'select all',
+    \'jpp': 'json pretty print',
+    \'tm':  'table mode',
+    \}
 
-
-DEFINE A NEW MAPPING                                            *vim-do-mapping*
-==============================================================================
-
-This is the structure of a command in the g:vimdo dictionary (or in any group):
->
-    {
-      trigger: [name, rhs, options],
-      ...
-    }
-
-By default, built mappings are non-recursive, and just plain simple:
-
-  nnoremap <trigger> <rhs>
-
-'trigger'  is the mapping after 'do'
-'name'     is the string for `show all do's`, and how the plug will be named
-'rhs'      is the {rhs} of the generated mapping.
-'options'  is optional, and is a string
-
-'options' is a sequence of characters and can contain:
-  - `r` mapping is recursive
-  - `e` is <expr>
-  - `s` is <silent>
-  - `m` is 'map' and not 'nmap'
-  - `x` is 'xmap'
-  - `v` is 'vmap'
-  - `o` is 'omap'
-
-If 'options' were ='xres', mapping wuold be:
-
-  xmap <trigger> <silent><expr> <rhs>
-
-Consider that it makes little sense to use 'xmap' in the main dictionary (|d|
-deletes in visual mode).
 
 
 GROUPS                                                           *vim-do-groups*
 ==============================================================================
 
-The default group uses 'do' as prefix. You can change it by setting:
+An example of creating a new group:
 >
-  let g:vimdo_prefix = 'do'
+  nnoremap \gr  :echo system("git reset")<cr>
+  nnoremap \gs  :Gstatus<cr>
+  nnoremap \gb  :Gblame<cr>
+  nnoremap \gp  :redraw! <bar> echo "Pushing...\t" <bar> echon system("git push")<cr>
+  nnoremap \ga  :echo system("git add .")."Git: added ."<cr>
+  nnoremap \gl  :Glog<cr>
+  nnoremap \gg  :Gcommit<cr>
+  nnoremap \gd  :Gvdiff<Space>
+  nnoremap \gC  :Gcommit --amend<cr>
+  nnoremap \gA  :call system("git add .")<cr>:Gcommit --amend<cr>
 
-You can make other groups that can use different triggers, and that will
-be shown independently:
->
-  let g:vimdo_groups              = { 'git': {} }
-  let g:vimdo_groups.git.prefix   = 'dg'
-  let g:vimdo_groups.git.show_cmd = 'dgO'
-  let g:vimdo_groups.git.KEY      = a_new_command
+  let g:vimdo = {}
+  let g:vimdo['\g'] = { 'label' : 'git commands', 'require_description': 1,
+    \'r':  'reset',
+    \'s':  'status',
+    \'b':  'blame',
+    \'p':  'push',
+    \'a':  'add all',
+    \'l':  'log',
+    \'g':  'commit',
+    \'d':  'diff',
+    \'C':  'amend',
+    \'A':  'add all and amend',
+    \}
 
-`prefix` is the first part of the mapping. `show_cmd` is the full mapping of
-the command to show the group's mappings.
+  nnoremap \gO :call do#show_all_dos('\g')<cr>
 
-Note: same KEY in different groups will result in the same mapping, and will
-overwrite each other, if they also share the same prefix.
-Groups are processed in alphabetic order.
+What happens here?
+
+- you assign your mappings, as you normally would.
+- you initialize the `g:vimdo` dict (if you didn't already!)
+- you create a key inside of it, that is the mapping prefix you are using.
+- you populate this key with the continuation of each mapping, and set a description.
+- finally you crate a mapping to show your group.
+
+In the created dictionary, there are two optional keys:
+
+`label`: a label for the header
+
+`require_description`: if present and true, only the mappings that have a
+description will be shown.
+
+The latter may be convenient because, in reality, you don't need to
+create a dictionary at all, just execute:
+
+`:call do#show_all_dos({a mapping prefix})`
+
+and all mappings that begin with that prefix will be shown. Setting
+`require_description` prevents unwanted mappings to be shown in the list, but
+forces you to add dictionary entries for all items.
 
 ==============================================================================
 vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:

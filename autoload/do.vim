@@ -23,6 +23,7 @@ fun! do#show_all_dos(...)
   let mode = mode() == 'n' ? 'n' : 'x'
   let cmd = mode.'map '.pre
   let require_desc = has_key(group, 'require_description') && group.require_description
+  let show_file = get(g:, 'vimdo_show_filename', 0)
 
   redir => dos
   silent! exe cmd
@@ -46,8 +47,9 @@ fun! do#show_all_dos(...)
     let flags .= d.buffer ? '@' : ''
     let key = do[strchars(pre):]
     let desc = has_key(group, key) ? group[key] : ''
+    let file = s:get_file(pre.key, mode)
     if empty(desc) && require_desc | continue | endif
-    let D[key] = [desc, d.rhs]
+    let D[key] = [desc, file, flags, d.rhs]
   endfor
   echohl None           | echo sep
   echohl WarningMsg     | echo lab
@@ -55,8 +57,14 @@ fun! do#show_all_dos(...)
   for do in sort(keys(D))
     echohl WarningMsg   | echo  s:pad(do, 16)
     echohl Special      | echon s:pad(D[do][0], 40)
-    echohl Statement    | echon s:pad(flags, 3)
-    echohl None         | echon s:pad(D[do][1], &columns - 63)
+    if show_file
+      echohl Statement    | echon s:pad(D[do][1], 20)
+      echohl Special      | echon s:pad(D[do][2], 3)
+      echohl None         | echon s:pad(D[do][3], &columns - 83)
+    else
+      echohl Statement    | echon s:pad(D[do][2], 3)
+      echohl None         | echon s:pad(D[do][3], &columns - 63)
+    endif
   endfor
   echo sep
 endfun
@@ -65,8 +73,10 @@ endfun
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! s:pad(t, n)
-  if len(a:t) > a:n
-    return a:t."…"
+  if a:n <= 0
+    return ''
+  elseif len(a:t) > a:n
+    return a:t[:a:n]."…"
   else
     let spaces = a:n - len(a:t)
     let spaces = printf("%".spaces."s", "")
@@ -80,6 +90,22 @@ fun! s:repeat_char(c)
     let s .= a:c
   endfor
   return s
+endfun
+
+fun! s:get_file(map, mode)
+  if !get(g:, 'vimdo_show_filename', 0) | return '' | endif
+  redir => m
+  exe "silent! verbose ".a:mode."map ".a:map
+  redir END
+  let m = split(m, '\n')
+  for i in range(len(m))
+    if match(m[i], escape(a:map, '\')) == 3
+      let m = m[i+1]
+      break
+    endif
+  endfor
+  let m = substitute(m, '.*\s', '', '')
+  return fnamemodify(m, ':t')
 endfun
 
 fun! do#msg(m, ...)

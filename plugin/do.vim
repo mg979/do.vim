@@ -5,7 +5,6 @@
 if get(g:, 'vimdo_use_default_commands', 1)
   nnoremap dows  :call do#cmd#trim_whitespaces()<cr>
   nnoremap dore  :call do#cmd#redir_expression()<cr>
-  nnoremap dorc  :RedirCommand<space>
   nnoremap dout  :call do#cmd#update_tags()<cr>
   nnoremap dovp  :call do#cmd#profiling()<cr>
   nnoremap dods  :call do#diff#saved()<cr>
@@ -14,10 +13,12 @@ if get(g:, 'vimdo_use_default_commands', 1)
   nnoremap dossa :call do#cmd#syntax_attr()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
 
+  nnoremap dorc  :RedirCommand<space>
   command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
 endif
 
-let s:default = get(g:, 'vimdo_use_default_commands', 1) ? { 'label': 'do...',
+let g:vimdo = get(g:, 'vimdo', {})
+let g:vimdo.do = extend({ 'label': 'do...',
       \ 'ws':  'trim whitespaces',
       \ 're':  'redir expression',
       \ 'rc':  'redir command',
@@ -28,10 +29,7 @@ let s:default = get(g:, 'vimdo_use_default_commands', 1) ? { 'label': 'do...',
       \ 'dl':  'diff last revision',
       \ 'ssa': 'show syntax attributes',
       \ 'fcr': 'find files with CRLF endings',
-      \} : {}
-
-let g:vimdo = get(g:, 'vimdo', {})
-let g:vimdo.do = extend(s:default, get(g:vimdo, 'do', {}))
+      \}, get(g:vimdo, 'do', {}))
 
 nnoremap dO :call do#show_all_dos()<cr>
 
