@@ -2,7 +2,7 @@
 " do.vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if get(g:, 'vimdo_use_default_commands', 1)
+if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap dows  :call do#cmd#trim_whitespaces()<cr>
   nnoremap dore  :call do#cmd#redir_expression()<cr>
   nnoremap dout  :call do#cmd#update_tags()<cr>
@@ -31,7 +31,7 @@ let g:vimdo.do = extend({ 'label': 'do...',
       \ 'fcr': 'find files with CRLF endings',
       \}, get(g:vimdo, 'do', {}))
 
-nnoremap dO :call do#show_all_dos()<cr>
+nnoremap dO :call do#show_all_dos('do')<cr>
 
-command! -nargs=?                   ShowDos      call do#show_all_dos(<q-args>)
+command! -nargs=? -bang ShowDos exe call('do#show_all_dos', <bang>0 ? [<q-args>, 1] : [<q-args>])
 

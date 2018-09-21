@@ -40,8 +40,30 @@ To create new groups, see |do-vim-groups|.
 DEFAULT COMMANDS                                                *do-vim-default*
 ==============================================================================
 
-This is the dict with the default commands. If you don't want all defaults, but
-want some of them, add them to your `vimrc`:
+You can call it from the command line:
+>
+    :ShowDos {prefix}
+
+With a <bang>, it will also show filenames, even if `g:vimdo_show_filename` is
+false:
+>
+    :ShowDos! {prefix}
+
+These are the the default commands:
+
+'dodo'  ->  do diff other file (in next window)
+'dods'  ->  do diff with saved
+'dodl'  ->  do diff with last git revision
+'dorc'  ->  do redir command (command output to new buffer)
+'dore'  ->  do redir expression (expression to new buffer)
+'dows'  ->  do trim whitespaces
+'dout'  ->  do update tags (runs `ctags -R .`)
+'dovp'  ->  do vim profiling (first time activates, second time stops and quits)
+'dossa' ->  do print syntax infos for word under cursor
+'dofcr' ->  do find CR (mass find/correct files with CRLF line endings in the
+            current working directory)
+
+If you don't want all defaults, but want some of them, add them to your `vimrc`:
 >
   nnoremap dows  :call do#cmd#trim_whitespaces()<cr>
   nnoremap dout  :call do#cmd#update_tags()<cr>
@@ -54,18 +76,6 @@ want some of them, add them to your `vimrc`:
   nnoremap dore  :call do#cmd#redir_expression()<cr>
   nnoremap dorc  :RedirCommand<space>
   command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
-
-'dodo'  ->  do diff other file (in next window)
-'dods'  ->  do diff with saved
-'dodl'  ->  do diff with last git revision
-'dorc'  ->  do redir command (command output to new buffer)
-'dore'  ->  do redir expression (expression to new buffer)
-'dows'  ->  do trim whitespaces
-'dout'  ->  do update tags (runs `ctags -R .`)
-'dovp'  ->  do vim profiling (first time activates, second time stops and quits)
-'dossa' ->  do vim profiling (first time activates, second time stops and quits)
-'dofcr' ->  do find CR (mass find/correct files with CRLF line endings in the
-            current working directory)
 
 To extend default group with some other commands (example):
 >

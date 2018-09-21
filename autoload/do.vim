@@ -1,29 +1,22 @@
 " Show all do's command
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#show_all_dos(...)
+fun! do#show_all_dos(group, ...)
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
   endif
 
-  if !a:0 || empty(a:1)         "default group (do...)
-    let group = g:vimdo.do
-    let pre = 'do'
-    let pat = 'do'
-
-  else                          "other groups
-    let group = has_key(g:vimdo, a:1) ? g:vimdo[a:1] : {}
-    let pre = a:1
-    let pat = escape(pre, '\')
-    let pat = escape(pat, '\')
-  endif
+  let group = has_key(g:vimdo, a:group) ? g:vimdo[a:group] : {}
+  let pre = a:group
+  let pat = escape(pre, '\')
+  let pat = escape(pat, '\')
 
   let sep = s:repeat_char('-')
   let lab = has_key(group, 'label') ?  pre."\t\t".group.label : pre
   let mode = mode() == 'n' ? 'n' : 'x'
   let cmd = mode.'map '.pre
   let require_desc = has_key(group, 'require_description') && group.require_description
-  let show_file = get(g:, 'vimdo_show_filename', 0)
+  let show_file = a:0 ? 1 : get(g:, 'vimdo_show_filename', 0)
 
   redir => dos
   silent! exe cmd
@@ -47,7 +40,7 @@ fun! do#show_all_dos(...)
     let flags .= d.buffer ? '@' : ''
     let key = do[strchars(pre):]
     let desc = has_key(group, key) ? group[key] : ''
-    let file = s:get_file(pre.key, mode)
+    let file = show_file ? s:get_file(pre.key, mode) : ''
     if empty(desc) && require_desc | continue | endif
     let D[key] = [desc, file, flags, d.rhs]
   endfor
@@ -93,7 +86,6 @@ fun! s:repeat_char(c)
 endfun
 
 fun! s:get_file(map, mode)
-  if !get(g:, 'vimdo_show_filename', 0) | return '' | endif
   redir => m
   exe "silent! verbose ".a:mode."map ".a:map
   redir END
