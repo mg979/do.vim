@@ -14,11 +14,12 @@ if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
 
   nnoremap dorc  :RedirCommand<space>
-  command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
+  command! -nargs=* -complete=command RedirCommand call do#cmd#redir_cmd(<f-args>)
 endif
 
+let g:vimdo_default_prefix = get(g:, 'vimdo_default_prefix', 'do')
 let g:vimdo = get(g:, 'vimdo', {})
-let g:vimdo.do = extend({ 'label': 'do...',
+let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \ 'ws':  'trim whitespaces',
       \ 're':  'redir expression',
       \ 'rc':  'redir command',
@@ -29,7 +30,7 @@ let g:vimdo.do = extend({ 'label': 'do...',
       \ 'dl':  'diff last revision',
       \ 'ssa': 'show syntax attributes',
       \ 'fcr': 'find files with CRLF endings',
-      \}, get(g:vimdo, 'do', {}))
+      \}, get(g:vimdo, g:vimdo_default_prefix, {}))
 
 nnoremap dO :call do#show_all_dos('do')<cr>
 

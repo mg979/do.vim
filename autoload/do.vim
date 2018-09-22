@@ -14,15 +14,20 @@ fun! do#show_all_dos(group, ...)
   let sep = s:repeat_char('-')
   let lab = has_key(group, 'label') ?  pre."\t\t".group.label : pre
   let mode = mode() == 'n' ? 'n' : 'x'
-  let cmd = mode.'map '.pre
   let require_desc = has_key(group, 'require_description') && group.require_description
   let show_file = a:0 ? 1 : get(g:, 'vimdo_show_filename', 0)
 
-  redir => dos
-  silent! exe cmd
-  redir END
+  if has_key(group, 'arbitrary') && group.arbitrary
+    let dos = s:get_maps(group)
+    let pre = ''
+    let pat = ''
+  else
+    redir => dos
+    silent! exe mode.'map '.pre
+    redir END
+    let dos = split(dos, '\n')
+  endif
 
-  let dos = split(dos, '\n')
   for i in range(len(dos))
     let dos[i] = substitute(dos[i], 'n  ', '', '')
     let dos[i] = substitute(dos[i], '\s.*', '', '')
@@ -98,6 +103,11 @@ fun! s:get_file(map, mode)
   endfor
   let m = substitute(m, '.*\s', '', '')
   return fnamemodify(m, ':t')
+endfun
+
+fun! s:get_maps(group)
+  return filter(keys(a:group),
+        \'v:val != "require_description" && v:val != "label" && v:val != "arbitrary"')
 endfun
 
 fun! do#msg(m, ...)

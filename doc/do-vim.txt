@@ -19,6 +19,9 @@ What's the difference between this and just typing `:nmap do`?
 But you're not limited to the `do` keyword, you can do the same with any other
 mapping prefix.
 
+NOTE: using the keyword 'do' will conflict with |do| in diff mode (|:diffget|).
+You could remap vim's 'do', or use another prefix instead of 'do'.
+
 
 
 OPTIONS                                                         *do-vim-options*
@@ -27,6 +30,10 @@ OPTIONS                                                         *do-vim-options*
 If you want the default commands:
 >
   let g:vimdo_use_default_commands = 1
+
+If you to change the default prefix (default `do`):
+>
+  let g:vimdo_default_prefix = 'do'
 
 To show the file where the mapping is defined:
 >
@@ -135,21 +142,35 @@ What happens here?
 - you populate this key with the continuation of each mapping, and set a description.
 - finally you crate a mapping to show your group.
 
-In the created dictionary, there are two optional keys:
+SPECIAL KEYS                                                    *do-vim-special*
+==============================================================================
+                                                                *do-vim-label*
+                                                  *do-vim-require_description*
+                                                            *do-vim-arbitrary*
 
-`label`: a label for the header
+In the created dictionary, there can be these optional keys:
 
-`require_description`: if present and true, only the mappings that have a
-description will be shown.
+- `label`
+- `arbitrary`
+- `require_description`
 
-The latter may be convenient because, in reality, you don't need to
-create a dictionary at all, just execute:
+`label`: is just a label for the header.
 
-`:call do#show_all_dos({a mapping prefix})`
+`require_description`: that is, dict key. May be convenient because, in
+    reality, you don't need to create a dictionary at all, just execute:
 
-and all mappings that begin with that prefix will be shown. Setting
-`require_description` prevents unwanted mappings to be shown in the list, but
-forces you to add dictionary entries for all items.
+    `:call do#show_all_dos( {prefix} )`
+
+    and all mappings that begin with that prefix will be shown. Setting
+    `require_description` prevents unwanted mappings to be shown in the list,
+    but forces you to add dictionary entries for all items.
+
+`arbitrary`: if true, the group name is not the prefix, is just a group name.
+    The whole keys will be checked for a mapping, but only those ones.
+    This allows you to show a set of mapping of your choosing, from the ground
+    up. Pointless to use `require_description` with this one.
+    For example, you could use arbitrary groups in your |ftplugin| files, to
+    show mappings that you define there.
 
 ==============================================================================
 vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:

@@ -158,7 +158,7 @@ fun! do#cmd#syntax_attr()
     exe "hi" synIDattr(synIDtrans(id0), "name")
   endif
   echohl None
-  silent! call repeat#set(":\<c-u>call do#syntax_attr()\<cr>", 1)
+  silent! call repeat#set(":\<c-u>call do#cmd#syntax_attr()\<cr>", 1)
 endfun
 
 " Helpers
