@@ -1,4 +1,5 @@
-" Diff commands
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Section: Diff commands                                                   {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 let s:diffed_buffers = []
@@ -15,7 +16,7 @@ fun! do#diff#other()
   let buf2 = bufnr("%")
   wincmd p
   if f == f2
-    return do#diff_with_saved()
+    return do#diff#saved()
   endif
   let was_left = index(bufs, buf1) < index(bufs, buf2)
   exe "tabedit" f
@@ -24,21 +25,23 @@ fun! do#diff#other()
   call s:diff_map()
   wincmd p
   redraw!
-  call do#msg("q: back, ]: next change, [: previous change, do: diffget, dp: diffput", 1)
+  call do#msg("q: back, ]c: next change, [c: previous change, do: diffget, dp: diffput", 1)
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! do#diff#saved()
   let f = s:get_current_file()
+  let g:xtabline.Vars.tab_properties = {'locked':1}
   exe "tabedit" f
   call s:diff_map()
   vnew | exe "r" f | normal! 1Gdd
   exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . s:filetype
+  let b:XTbuf = {'name': 'Saved file', 'special': 1}
   call s:diff_map()
   wincmd x
   redraw!
-  call do#msg("q: back, ]: next change, [: previous change", 1)
+  call do#msg("q: back, ]c: next change, [c: previous change, do: diffget, dp: diffput", 1)
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -60,46 +63,51 @@ fun! do#diff#last_revision()
     wincmd x
   endif
   redraw!
-  call do#msg("q: back, ]: next change, [: previous change, do: diffget, dp: diffput", 1)
+  call do#msg("q: back, ]c: next change, [c: previous change, do: diffget, dp: diffput", 1)
 endfun
 
-" Helpers
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Section: Helpers                                                         {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! s:get_current_file()
-	let s:T = tabpagenr()
-	let f = expand("%:p")
-	let s:filetype = &ft
-	return f
+  let s:T = tabpagenr()
+  let f = resolve(expand("%:p"))
+  let s:filetype = &ft
+  return f
 endfun
 
 fun! s:Tab()
-	call s:diff_unmap()
-	tabclose
-	return s:T
+  call s:diff_unmap()
+  tabclose
+  return s:T
 endfun
 
 fun! s:diff_map()
-	diffthis
-	call add(s:diffed_buffers, (bufnr("%")))
-	nnoremap <buffer><silent><nowait> q :exe "normal! ".<sid>Tab()."gt"<cr>
-	nnoremap <buffer><silent><nowait> ] ]c
-	nnoremap <buffer><silent><nowait> [ [c
-	nnoremap <buffer><silent><nowait> do do
-	nnoremap <buffer><silent><nowait> dp dp
+  diffthis
+  call add(s:diffed_buffers, ([bufnr("%"), &cursorline]))
+  setlocal nocursorline
+  nnoremap <buffer><silent><nowait> <leader>q   :exe "normal! ".<sid>Tab()."gt"<cr>
+  nnoremap <buffer><silent><nowait> q           :exe "normal! ".<sid>Tab()."gt"<cr>
+  nnoremap <buffer><silent><nowait> ]c          ]c
+  nnoremap <buffer><silent><nowait> [c          [c
+  nnoremap <buffer><silent><nowait> do          do
+  nnoremap <buffer><silent><nowait> dp          dp
 endfun
 
 fun! s:diff_unmap()
-	for buf in s:diffed_buffers
-		silent! exe "b ".buf
-		silent! unmap <buffer> q
-		silent! unmap <buffer> ]
-		silent! unmap <buffer> [
-		silent! unmap <buffer> do
-		silent! unmap <buffer> dp
-		diffoff
-	endfor
-	let s:diffed_buffers = []
+  for buf in s:diffed_buffers
+    let &cursorline = buf[1]
+    silent! exe "b ".buf[0]
+    silent! unmap <buffer> <leader>q
+    silent! unmap <buffer> q
+    silent! unmap <buffer> ]c
+    silent! unmap <buffer> [c
+    silent! unmap <buffer> do
+    silent! unmap <buffer> dp
+    diffoff
+  endfor
+  let s:diffed_buffers = []
 endfun
 
 fun! s:is_tracked(file)

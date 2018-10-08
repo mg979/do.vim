@@ -1,7 +1,26 @@
-" Show all do's command
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Section: Show all do's command                                           {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! do#show_all_dos(group, ...)
+  if a:0
+    call s:show_all_dos(a:group, a:1, 0)
+  else
+    call s:show_all_dos(a:group, 0, 0)
+  endif
+endfun
+
+fun! do#show_buffer_dos(group, ...)
+  if a:0
+    call s:show_all_dos(a:group, a:1, 1)
+  else
+    call s:show_all_dos(a:group, 0, 1)
+  endif
+endfun
+
+"------------------------------------------------------------------------------
+
+fun! s:show_all_dos(group, show_file, buffer)
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
   endif
@@ -15,7 +34,7 @@ fun! do#show_all_dos(group, ...)
   let lab = has_key(group, 'label') ?  pre."\t\t".group.label : pre
   let mode = mode() == 'n' ? 'n' : 'x'
   let require_desc = has_key(group, 'require_description') && group.require_description
-  let show_file = a:0 ? 1 : get(g:, 'vimdo_show_filename', 0)
+  let show_file = a:show_file ? 1 : get(g:, 'vimdo_show_filename', 0)
 
   if has_key(group, 'arbitrary') && group.arbitrary
     let dos = s:get_maps(group)
@@ -37,7 +56,7 @@ fun! do#show_all_dos(group, ...)
   let D = {}
   for do in dos
     let d = maparg(do, mode, 0, 1)
-    if match(d.rhs, '^:call do#show_all_dos') == 0
+    if (a:buffer && !d.buffer) || match(d.rhs, '^:call do#show_all_dos') == 0
       continue
     endif
     let flags = ''
@@ -67,7 +86,8 @@ fun! do#show_all_dos(group, ...)
   echo sep
 endfun
 
-" Helpers
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Section: Helpers                                                         {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! s:pad(t, n)
