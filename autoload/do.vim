@@ -20,7 +20,7 @@ endfun
 
 "------------------------------------------------------------------------------
 
-fun! s:show_all_dos(group, show_file, buffer)
+fun! s:show_all_dos(group, show_file, buffer, ...)
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
   endif
@@ -56,7 +56,9 @@ fun! s:show_all_dos(group, show_file, buffer)
   let D = {}
   for do in dos
     let d = maparg(do, mode, 0, 1)
-    if (a:buffer && !d.buffer) || match(d.rhs, '^:call do#show_all_dos') == 0
+    if (a:buffer && !d.buffer) ||
+          \ a:0 && match(d.lhs, '^'.fnameescape(pre).a:1) != 0 ||
+          \ match(d.rhs, '^:call do#show_') == 0
       continue
     endif
     let flags = ''
@@ -84,6 +86,17 @@ fun! s:show_all_dos(group, show_file, buffer)
     endif
   endfor
   echo sep
+  echo "Press a key to filter the list, <space> to reset, or <cr>/<esc> to exit"
+  let c = getchar()
+  if c == 13 || c == 27
+    call feedkeys("\<cr>", 'n')
+  elseif c == 32
+    redraw!
+    call s:show_all_dos(a:group, a:show_file, a:buffer)
+  else
+    redraw!
+    call s:show_all_dos(a:group, a:show_file, a:buffer, nr2char(c))
+  endif
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

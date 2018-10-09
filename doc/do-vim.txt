@@ -52,7 +52,7 @@ If you didn't change the default prefix, these mappings are set:
 		dO 		( show all do's )
 		doB		( show all buffer do's )
 
-`doB` is useful if you define new do's in |ftplugin| files, for example.
+`doB` is useful if you define new <buffer> do's in |ftplugin| files, for example.
 
 You can call it from the command line:
 >
