@@ -2,7 +2,7 @@
 " Section: Miscellaneous commands                                          {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#redir_expression(...)
+fun! do#cmd#redir_expression(...)                                         "{{{2
   if a:0 | let var = a:1
   else   | let var = input('RedirExpression > ', '', 'expression') | endif
   call s:redir(var, 1)
@@ -13,9 +13,11 @@ fun! do#cmd#redir_cmd(...)
   call s:redir(cmd, 0)
 endfun
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#profiling()
+"------------------------------------------------------------------------------
+
+
+fun! do#cmd#profiling()                                                   "{{{2
   for b in range(1, bufnr('$'))
     if getbufvar(b, '&modified')
       return do#msg("There are unsaved buffers, aborting.")
@@ -37,19 +39,40 @@ fun! do#cmd#profiling()
   endif
 endfun
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#trim_whitespaces()
+"------------------------------------------------------------------------------
+
+
+fun! do#cmd#trim_whitespaces()                                            "{{{2
   let pos = getpos(".")
   keeppatterns silent! %s/\s\+$//e
   call setpos('.', pos)
   call do#msg("Trimmed trailing whitespaces", 1)
 endfun
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#update_tags()
-  let error = system("ctags -R .")
+"------------------------------------------------------------------------------
+
+
+fun! do#cmd#open_ftplugin()                                               "{{{2
+  if !exists('$VIMDIR')
+   call do#msg('You need to set $VIMDIR in your vimrc')
+  elseif !isdirectory($VIMDIR.'/ftplugin')
+   call do#msg('No ftplugin directory in your vim directory')
+  elseif filereadable($VIMDIR.'/ftplugin/'.&filetype.'.vim')
+    exe "edit" $VIMDIR.'/ftplugin/'.&filetype.'.vim'
+  else
+   call do#msg('No ftplugin file in your vim directory for this filetype')
+  endif
+endfun
+
+
+"------------------------------------------------------------------------------
+
+
+fun! do#cmd#update_tags()                                                 "{{{2
+  let cmd = get(b:, 'ctags_cmd', "ctags -R .")
+  let error = system(cmd)
   if empty(error)
     call do#msg("Tags updated.", 1)
   else
@@ -57,20 +80,28 @@ fun! do#cmd#update_tags()
   endif
 endfun
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#find_crlf(bang, dir)
+"------------------------------------------------------------------------------
+
+
+fun! do#cmd#find_crlf(bang, dir)                                          "{{{2
+  if has('win32') || has('win16') || has('win64')
+    return do#msg('Not available on a Windows OS')
+  endif
   let dir = empty(a:dir) ? '.' : a:dir
   if !isdirectory(dir)
     return do#msg("Invalid Directory")
-  elseif fnamemodify('.', ":p") == expand("~") && confirm("This is your home directory!", "&Yes\n&No", 2) != 1
+  elseif fnamemodify('.', ":p") == expand("~") &&
+        \ confirm("This is your home directory!", "&Yes\n&No", 2) != 1
     return
   endif
   let files = systemlist("file $(find . -type f) | grep 'with CRLF' | sed 's#\./##' | sed 's/:.*//'")
   if empty(files) | return do#msg("No results.") | endif
   let list = []
   for file in files
-    call add(list, {'filename': file, 'text': system("file ".file." | sed 's/.*:/ /'"), 'lnum': 1, 'col':1})
+    call add(list, {'filename': file,
+          \         'text': system("file ".file." | sed 's/.*:/ /'"),
+          \         'lnum': 1, 'col':1})
   endfor
   call setqflist(list)
   if a:bang && confirm("Autoconvert to LF?", "&Yes\n&No", 2) == 1
@@ -84,9 +115,11 @@ fun! do#cmd#find_crlf(bang, dir)
   cfirst
 endfun
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#syntax_attr()
+"------------------------------------------------------------------------------
+
+
+fun! do#cmd#syntax_attr()                                                 "{{{2
   """Edited from Gary Holloway version:
   """https://www.vim.org/scripts/script.php?script_id=383
 
@@ -161,6 +194,7 @@ fun! do#cmd#syntax_attr()
   echohl None
   silent! call repeat#set(":\<c-u>call do#cmd#syntax_attr()\<cr>", 1)
 endfun
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Section: Helpers                                                         {{{1

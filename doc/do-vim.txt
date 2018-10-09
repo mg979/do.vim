@@ -71,7 +71,9 @@ These are the the default commands:
 'dorc'  ->  do redir command (command output to new buffer)
 'dore'  ->  do redir expression (expression to new buffer)
 'dows'  ->  do trim whitespaces
-'dout'  ->  do update tags (runs `ctags -R .`)
+'doec'  ->  do echo color infos
+'doft'  ->  do open ftplugin file (if present in $VIMDIR/ftplugin)
+'dout'  ->  do update tags (runs `ctags -R .`, or `b:ctags_cmd` if defined)
 'dovp'  ->  do vim profiling (first time activates, second time stops and quits)
 'dossa' ->  do print syntax infos for word under cursor
 'dofcr' ->  do find CR (mass find/correct files with CRLF line endings in the
@@ -88,6 +90,8 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dossa :call do#cmd#syntax_attr()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
   nnoremap dore  :call do#cmd#redir_expression()<cr>
+  nnoremap doec  :call do#color#echo()<cr>
+  nnoremap doft  :call do#cmd#open_ftplugin()<cr>
   nnoremap dorc  :RedirCommand<space>
   command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
 
