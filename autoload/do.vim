@@ -3,38 +3,43 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! do#show_all_dos(group, ...)
+  let s:current = ''
   if a:0
-    call s:show_all_dos(a:group, a:1, 0)
+    call s:show_all_dos(a:group, a:1, 0, '')
   else
-    call s:show_all_dos(a:group, 0, 0)
+    call s:show_all_dos(a:group, 0, 0, '')
   endif
 endfun
 
 fun! do#show_buffer_dos(group, ...)
+  let s:current = ''
   if a:0
-    call s:show_all_dos(a:group, a:1, 1)
+    call s:show_all_dos(a:group, a:1, 1, '')
   else
-    call s:show_all_dos(a:group, 0, 1)
+    call s:show_all_dos(a:group, 0, 1, '')
   endif
 endfun
 
 "------------------------------------------------------------------------------
 
-fun! s:show_all_dos(group, show_file, buffer, ...)
+fun! s:show_all_dos(group, show_file, buffer, filter)
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
   endif
 
   let group = has_key(g:vimdo, a:group) ? g:vimdo[a:group] : {}
   let pre = a:group
-  let pat = escape(pre, '\')
-  let pat = escape(pat, '\')
+  let pat = match(pre, '<') == 0 ? pre : fnameescape(pre)
 
   let sep = s:repeat_char('-')
   let lab = has_key(group, 'label') ?  pre."\t\t".group.label : pre
   let mode = mode() == 'n' ? 'n' : 'x'
-  let require_desc = has_key(group, 'require_description') && group.require_description
+  let require_desc = has_key(group, 'require_description')
+        \            && group.require_description
   let show_file = a:show_file ? 1 : get(g:, 'vimdo_show_filename', 0)
+  let with_filter = !empty(a:filter)
+  let interactive = has_key(group, 'interactive') ?
+        \           group.interactive : get(g:, 'vimdo_interactive', 0)
 
   if has_key(group, 'arbitrary') && group.arbitrary
     let dos = s:get_maps(group)
@@ -51,13 +56,17 @@ fun! s:show_all_dos(group, show_file, buffer, ...)
     let dos[i] = substitute(dos[i], 'n  ', '', '')
     let dos[i] = substitute(dos[i], '\s.*', '', '')
   endfor
-  call filter(dos, 'v:val =~ "^'.pat.'\\S"')
+  call filter(dos, "v:val =~ '^".pat."\\S'")
+
+  " no results
   if empty(dos) | return do#msg("No do's") | endif
+
   let D = {}
   for do in dos
     let d = maparg(do, mode, 0, 1)
     if (a:buffer && !d.buffer) ||
-          \ a:0 && match(d.lhs, '^'.fnameescape(pre).a:1) != 0 ||
+          \ with_filter && match(d.lhs, '^'.pat.a:filter) != 0 ||
+          \ interactive && match(d.lhs, '^'.pat.s:current) != 0 ||
           \ match(d.rhs, '^:call do#show_') == 0
       continue
     endif
@@ -69,7 +78,17 @@ fun! s:show_all_dos(group, show_file, buffer, ...)
     let file = show_file ? s:get_file(pre.key, mode) : ''
     if empty(desc) && require_desc | continue | endif
     let D[key] = [desc, file, flags, d.rhs]
+
+    " interactive: execute the mapping, if it matches the current key
+    if interactive && s:current == key
+      call feedkeys("\<esc>".pre.key)
+      return
+    endif
   endfor
+
+  " interactive: terminate if no matches are found
+  if interactive && empty(D) | return do#msg("No matches") | endif
+
   echohl None           | echo sep
   echohl WarningMsg     | echo lab
   echohl None           | echo sep
@@ -86,16 +105,45 @@ fun! s:show_all_dos(group, show_file, buffer, ...)
     endif
   endfor
   echo sep
+  if interactive
+    call s:interactive(a:group, a:show_file, a:buffer)
+  else
+    call s:loop(a:group, a:show_file, a:buffer)
+  endif
+endfun
+
+"------------------------------------------------------------------------------
+
+fun! s:loop(group, show_file, buffer)
   echo "Press a key to filter the list, <space> to reset, or <cr>/<esc> to exit"
   let c = getchar()
   if c == 13 || c == 27
     call feedkeys("\<cr>", 'n')
   elseif c == 32
     redraw!
-    call s:show_all_dos(a:group, a:show_file, a:buffer)
+    call s:show_all_dos(a:group, a:show_file, a:buffer, '')
   else
     redraw!
     call s:show_all_dos(a:group, a:show_file, a:buffer, nr2char(c))
+  endif
+endfun
+
+"------------------------------------------------------------------------------
+
+fun! s:interactive(group, show_file, buffer)
+  echo "Current choice:" s:current
+  echo "Press a key to filter the list, <space> to reset, or <cr>/<esc> to exit"
+  let c = getchar()
+  if c == 13 || c == 27
+    call feedkeys("\<cr>", 'n')
+  elseif c == 32
+    redraw!
+    let s:current = ''
+    call s:show_all_dos(a:group, a:show_file, a:buffer, '')
+  else
+    redraw!
+    let s:current .= nr2char(c)
+    call s:show_all_dos(a:group, a:show_file, a:buffer, '')
   endif
 endfun
 
@@ -148,4 +196,5 @@ fun! do#msg(m, ...)
   else     | echohl WarningMsg  | echom a:m | endif
   echohl None
 endfun
+
 

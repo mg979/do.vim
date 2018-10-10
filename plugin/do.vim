@@ -47,5 +47,5 @@ if g:vimdo_default_prefix == 'do'
   nnoremap doB :call do#show_buffer_dos('do')<cr>
 endif
 
-command! -nargs=? -bang ShowDos exe call('do#show_all_dos', <bang>0 ? [<q-args>, 1] : [<q-args>])
+command! -nargs=? -bang ShowDos call do#show_all_dos(<q-args>, <bang>0)
 

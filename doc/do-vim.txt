@@ -13,8 +13,9 @@ your mappings. All you need to do, is to define some mappings that start with
 What's the difference between this and just typing `:nmap do`?
 
 - you can set descriptions for each mapping, and the output is more readable.
-- you can filter entries.
-- it can show the file where mapping is defined.
+- you can filter entries by pressing a key.
+- it can show the files where mappings are defined.
+- it can be run in interactive mode.
 
 But you're not limited to the `do` keyword, you can do the same with any other
 mapping prefix.
@@ -38,6 +39,10 @@ If you to change the default prefix (default `do`):
 To show the file where the mapping is defined:
 >
   let g:vimdo_show_filename = 1
+
+To always run in interactive mode (see |do-vim-interactive|):
+>
+  let g:vimdo_interactive = 1
 
 To extend default group (`do`), see next section.
 To create new groups, see |do-vim-groups|.
@@ -153,7 +158,9 @@ What happens here?
 - you populate this key with the continuation of each mapping, and set a description.
 - finally you crate a mapping to show your group.
 
-SPECIAL KEYS                                                    *do-vim-special*
+
+
+GROUP DICTIONARY                                             *do-vim-dictionary*
 ==============================================================================
                                                                 *do-vim-label*
                                                   *do-vim-require_description*
@@ -164,6 +171,7 @@ In the created dictionary, there can be these optional keys:
 - `label`
 - `arbitrary`
 - `require_description`
+- `interactive`
 
 `label`: is just a label for the header.
 
@@ -182,6 +190,21 @@ In the created dictionary, there can be these optional keys:
     up. Pointless to use `require_description` with this one.
     For example, you could use arbitrary groups in your |ftplugin| files, to
     show mappings that you define there.
+
+`interactive`: if true, run in interactive mode.
+
+
+
+INTERACTIVE MODE                                            *do-vim-interactive*
+==============================================================================
+
+The command can be run in interactive mode if the global option is set, or if
+a custom group contains the 'interactive' dictionary key.
+
+In this case, the pressed keys will not only refilter the list, but also
+trigger the mapping if a match in the list is found.
+
+
 
 ==============================================================================
 vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:

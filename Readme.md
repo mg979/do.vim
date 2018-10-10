@@ -13,7 +13,8 @@ What's the difference between this and just typing `:nmap do`?
 
 - you can set descriptions for each mapping, and the output is more readable.
 - you can filter entries.
-- it can show the files where mappings are defined (not by default).
+- it can show the files where mappings are defined.
+- it can be run in interactive mode.
 
 But you're not limited to the `do` keyword, you can do the same with any other
 mapping prefix.
@@ -32,13 +33,14 @@ Documentation: `:help do-vim`
 ## Is this similar to...
 ------------------------------------------------------------------------------
 
-[vim-leader-guide](https://github.com/hecal3/vim-leader-guide): no, it's not
-interactive, but it can be more readable and informative. It is meant to be
-used as a quick reference for commands, not to run the command themselves. And
-it doesn't even need to be configured, for its most basic usage.
+[vim-leader-guide](https://github.com/hecal3/vim-leader-guide): *do.vim* can be
+run in interactive mode, but not by default. Its main purpose is to provide a
+quick reference for commands, in a readable and informative way, not to run the
+command themselves. And it doesn't even need to be configured, for its most
+basic usage.
 
 [vim-unimpaired](https://github.com/tpope/vim-unimpaired): it's somewhat
-inspired by it, but it doesn't define mappings, it just shows them. You can
+inspired by it, but it doesn't define mappings, it just shows them. You could
 use them together.
 
 
