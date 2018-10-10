@@ -3,7 +3,7 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! do#show_all_dos(group, ...)
-  let s:current = ''
+  call s:init()
   if a:0
     call s:show_all_dos(a:group, a:1, 0, '')
   else
@@ -12,7 +12,7 @@ fun! do#show_all_dos(group, ...)
 endfun
 
 fun! do#show_buffer_dos(group, ...)
-  let s:current = ''
+  call s:init()
   if a:0
     call s:show_all_dos(a:group, a:1, 1, '')
   else
@@ -31,15 +31,25 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   let pre = a:group
   let pat = match(pre, '<') == 0 ? pre : fnameescape(pre)
 
-  let sep = s:repeat_char('-')
-  let lab = has_key(group, 'label') ?  pre."\t\t".group.label : pre
-  let mode = mode() == 'n' ? 'n' : 'x'
+  let sep         = s:repeat_char('-')
+  let lab         = has_key(group, 'label') ?  pre."\t\t".group.label : pre
+  let mode        = mode() == 'n' ? 'n' : 'x'
+  let show_file   = a:show_file ? 1 : get(g:, 'vimdo_show_filename', 0)
+  let with_filter = !empty(a:filter)
+
+  " group dictionary options
   let require_desc = has_key(group, 'require_description')
         \            && group.require_description
-  let show_file = a:show_file ? 1 : get(g:, 'vimdo_show_filename', 0)
-  let with_filter = !empty(a:filter)
-  let interactive = has_key(group, 'interactive') ?
-        \           group.interactive : get(g:, 'vimdo_interactive', 0)
+  let s:compact    = require_desc && has_key(group, 'compact')
+        \            && group.compact
+  let interactive  = has_key(group, 'interactive') ?
+        \            group.interactive : get(g:, 'vimdo_interactive', 0)
+
+  " formatting options
+  let keys_width = has_key(group, 'keys_width') ?
+        \          group.keys_width : get(g:, 'vimdo_keys_width', 16)
+  let desc_width = has_key(group, 'desc_width') ?
+        \          group.desc_width : get(g:, 'vimdo_desc_width', 40)
 
   if has_key(group, 'arbitrary') && group.arbitrary
     let dos = s:get_maps(group)
@@ -81,7 +91,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
 
     " interactive: execute the mapping, if it matches the current key
     if interactive && s:current == key
-      call feedkeys("\<esc>".pre.key)
+      call feedkeys(pre.key)
       return
     endif
   endfor
@@ -89,22 +99,46 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   " interactive: terminate if no matches are found
   if interactive && empty(D) | return do#msg("No matches") | endif
 
-  echohl None           | echo sep
-  echohl WarningMsg     | echo lab
-  echohl None           | echo sep
-  for do in sort(keys(D))
-    echohl WarningMsg   | echo  s:pad(do, 16)
-    echohl Special      | echon s:pad(D[do][0], 40)
-    if show_file
-      echohl Statement    | echon s:pad(D[do][1], 20)
-      echohl Special      | echon s:pad(D[do][2], 3)
-      echohl None         | echon s:pad(D[do][3], &columns - 83)
-    else
-      echohl Statement    | echon s:pad(D[do][2], 3)
-      echohl None         | echon s:pad(D[do][3], &columns - 63)
-    endif
-  endfor
-  echo sep
+  if s:compact
+    let total_space = &columns
+    let space_left = total_space
+    let column_width = keys_width + desc_width + 2
+
+    echo "\n"
+    for do in sort(keys(D))
+      if space_left != total_space
+        echohl WarningMsg   | echon  s:pad(do, keys_width)
+      else
+        echohl WarningMsg   | echo  s:pad(do, keys_width)
+      endif
+      echohl vimdoDesc      | echon s:pad(D[do][0], desc_width).'  '
+
+      let space_left -= column_width
+      if space_left <= column_width
+        let space_left = total_space
+      endif
+    endfor
+    echo "\n"
+  else
+    echohl None           | echo sep
+    echohl WarningMsg     | echo lab
+    echohl None           | echo sep
+    for do in sort(keys(D))
+      echohl WarningMsg   | echo  s:pad(do, keys_width)
+      echohl Special      | echon s:pad(D[do][0], desc_width)
+      if show_file
+        echohl Statement    | echon s:pad(D[do][1], 20)
+        echohl Special      | echon s:pad(D[do][2], 3)
+        echohl None         | echon s:pad(D[do][3], &columns - 83)
+      else
+        echohl Statement    | echon s:pad(D[do][2], 3)
+        echohl None         | echon s:pad(D[do][3], &columns - 63)
+      endif
+    endfor
+    echo sep
+  endif
+  echohl None
+
   if interactive
     call s:interactive(a:group, a:show_file, a:buffer)
   else
@@ -115,7 +149,10 @@ endfun
 "------------------------------------------------------------------------------
 
 fun! s:loop(group, show_file, buffer)
-  echo "Press a key to filter the list, <space> to reset, or <cr>/<esc> to exit"
+  if !s:compact
+    echo "Press a key to filter the list,"
+          \"<space> to reset, or <cr>/<esc> to exit"
+  endif
   let c = getchar()
   if c == 13 || c == 27
     call feedkeys("\<cr>", 'n')
@@ -131,11 +168,14 @@ endfun
 "------------------------------------------------------------------------------
 
 fun! s:interactive(group, show_file, buffer)
+  if !s:compact
+    echo "Press a key to filter the list,"
+          \"<space> to reset, or <cr>/<esc> to exit"
+  endif
   echo "Current choice:" s:current
-  echo "Press a key to filter the list, <space> to reset, or <cr>/<esc> to exit"
   let c = getchar()
   if c == 13 || c == 27
-    call feedkeys("\<cr>", 'n')
+    call feedkeys("\<c-l>", 'n')
   elseif c == 32
     redraw!
     let s:current = ''
@@ -150,6 +190,16 @@ endfun
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Section: Helpers                                                         {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+fun! s:init()
+  let s:current = ''
+  if &background == 'light'
+    hi link vimdoDesc String
+  else
+    hi vimdoDesc ctermfg=251 ctermbg=NONE guifg=#c9c6c9
+          \ guibg=NONE guisp=NONE cterm=NONE,italic gui=NONE,italic
+  endif
+endfun
 
 fun! s:pad(t, n)
   if a:n <= 0
@@ -187,8 +237,9 @@ fun! s:get_file(map, mode)
 endfun
 
 fun! s:get_maps(group)
-  return filter(keys(a:group),
-        \'v:val != "require_description" && v:val != "label" && v:val != "arbitrary"')
+  let remove = ['require_description', 'label', 'arbitrary', 'interactive',
+        \       'compact', 'keys_width', 'desc_width']
+  return filter(keys(a:group), 'index(remove, v:val) < 0')
 endfun
 
 fun! do#msg(m, ...)

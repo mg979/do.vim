@@ -160,6 +160,17 @@ What happens here?
 
 
 
+INTERACTIVE MODE                                            *do-vim-interactive*
+==============================================================================
+
+The command can be run in interactive mode if the global option is set, or if
+a custom group contains the 'interactive' dictionary key.
+
+In this case, the pressed keys will not only refilter the list, but also
+trigger the mapping if a match in the list is found.
+
+
+
 GROUP DICTIONARY                                             *do-vim-dictionary*
 ==============================================================================
                                                                 *do-vim-label*
@@ -169,17 +180,19 @@ GROUP DICTIONARY                                             *do-vim-dictionary*
 In the created dictionary, there can be these optional keys:
 
 - `label`
-- `arbitrary`
-- `require_description`
 - `interactive`
+- `require_description`
+- `arbitrary`
 
-`label`: is just a label for the header.
+`label`: just a label for the header.
+
+`interactive`: if true, run in interactive mode.
 
 `require_description`: that is, dict key. May be convenient because, in
     reality, you don't need to create a dictionary at all, just execute:
-
-    `:call do#show_all_dos( {prefix} )`
-
+>
+    :ShowDos {prefix}
+<
     and all mappings that begin with that prefix will be shown. Setting
     `require_description` prevents unwanted mappings to be shown in the list,
     but forces you to add dictionary entries for all items.
@@ -191,20 +204,28 @@ In the created dictionary, there can be these optional keys:
     For example, you could use arbitrary groups in your |ftplugin| files, to
     show mappings that you define there.
 
-`interactive`: if true, run in interactive mode.
 
 
-
-INTERACTIVE MODE                                            *do-vim-interactive*
+ADVANCED OPTIONS                                               *do-vim-advanced*
 ==============================================================================
 
-The command can be run in interactive mode if the global option is set, or if
-a custom group contains the 'interactive' dictionary key.
+Used to define the padding of mappings/descriptions
+>
+  let g:vimdo_keys_width = 16
+  let g:vimdo_desc_width = 40
 
-In this case, the pressed keys will not only refilter the list, but also
-trigger the mapping if a match in the list is found.
+More group dictionary keys:
 
+- `compact`
+- `keys_width`
+- `desc_width`
 
+`compact`: lets you show a group in a compact way, on multiple columns, without
+		showing the {rhs} of the mapping, only the trigger and the description.
+		Note: it needs `require_description` also set to 1 in the group.
+
+`keys_width` and `desc_width`: especially useful to set for a group, when
+		using compact mode.
 
 ==============================================================================
 vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:
