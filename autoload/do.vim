@@ -61,13 +61,12 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     silent! exe mode.'map '.pre
     redir END
     let dos = split(dos, '\n')
+    for i in range(len(dos))
+      let dos[i] = substitute(dos[i], 'n  ', '', '')
+      let dos[i] = substitute(dos[i], '\s.*', '', '')
+    endfor
+    call filter(dos, "v:val =~ '^".pat."\\S'")
   endif
-
-  for i in range(len(dos))
-    let dos[i] = substitute(dos[i], 'n  ', '', '')
-    let dos[i] = substitute(dos[i], '\s.*', '', '')
-  endfor
-  call filter(dos, "v:val =~ '^".pat."\\S'")
 
   " no results
   if empty(dos) | return do#msg("No do's") | endif
@@ -116,7 +115,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     let column_width = keys_width + desc_width + 2
 
     echo "\n"
-    for do in sort(keys(D))
+    for do in s:sort_dos(D, group)
       if space_left != total_space
         echohl WarningMsg   | echon  s:pad(do, keys_width)
       else
@@ -259,6 +258,19 @@ fun! s:get_maps(group)
   let remove = ['require_description', 'label', 'arbitrary', 'interactive',
         \       'compact', 'keys_width', 'desc_width']
   return filter(keys(a:group), 'index(remove, v:val) < 0')
+endfun
+
+fun! s:sort_dos(dos, group)
+  try
+    if has_key(a:group, 'order')
+      let l = filter(keys(a:dos), 'v:val != "order"')
+      return map(l, 'a:group.order[v:key]')
+    else
+      return sort(keys(a:dos))
+    endif
+  catch
+    return sort(keys(a:dos))
+  endtry
 endfun
 
 fun! s:get_do(group, do, mode)

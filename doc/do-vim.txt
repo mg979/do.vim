@@ -1,4 +1,4 @@
-*do-vim.txt*    do-vim     Version 0.1.0    Last change: September 21 2018
+*do-vim.txt*    do-vim     Version 0.1.0    Last change: October 11 2018
 
 DO.VIM                                                                  *do-vim*
 ==============================================================================
@@ -54,8 +54,8 @@ DEFAULT COMMANDS                                                *do-vim-default*
 
 If you didn't change the default prefix, these mappings are set:
 >
-		dO 		( show all do's )
-		doB		( show all buffer do's )
+    dO    ( show all do's )
+    doB   ( show all buffer do's )
 
 `doB` is useful if you define new <buffer> do's in |ftplugin| files, for example.
 
@@ -176,6 +176,7 @@ GROUP DICTIONARY                                             *do-vim-dictionary*
                                                                 *do-vim-label*
                                                   *do-vim-require_description*
                                                             *do-vim-arbitrary*
+                                                               *do-vim-simple*
 
 In the created dictionary, there can be these optional keys:
 
@@ -192,8 +193,8 @@ In the created dictionary, there can be these optional keys:
 `interactive`: run in interactive mode.
 
 `require_description`: that is, a dict key/value pair. May be convenient
-		because, in reality, you don't need to create a dictionary at all, just
-		execute:
+    because, in reality, you don't need to create a dictionary at all, just
+    execute:
 >
     :ShowDos {prefix}
 <
@@ -212,24 +213,32 @@ In the created dictionary, there can be these optional keys:
 
 ADVANCED USAGE                                                 *do-vim-advanced*
 ==============================================================================
+                                                              *do-vim-compact*
+                                                                *do-vim-order*
+                                                               *do-vim-widths*
 
 Used to define the padding of mappings/descriptions
 >
   let g:vimdo_keys_width = 16
   let g:vimdo_desc_width = 40
 
-More group dictionary keys:
+More optional group dictionary keys:
 
 - `compact`
+- `order`
 - `keys_width`
 - `desc_width`
 
 `compact`: lets you show a group in a compact way, on multiple columns, without
-		showing the {rhs} of the mapping, only the trigger and the description.
-		Note: if `compact` is set, `require_description` is also considered true.
+    showing the {rhs} of the mapping, only the trigger and the description.
+    Note: if `compact` is set, `require_description` is also considered true.
+
+`order`: since dictionaries don't preserve order, this key can hold the order
+    in which you want the group to be shown. All group mappings must be
+    present in this list, or it will fail.
 
 `keys_width` and `desc_width`: especially useful to set for a group, when
-		using compact mode.
+    using compact mode.
 
 Finally, you can define a command in the group dictionary, without having
 defined a mapping for it. This allows the creation of totally arbitrary
@@ -240,13 +249,15 @@ groups. To do this, the dictionary element must contain:
 Note: with this system, you can also create contextual menus that execute
 custom commands at keypress!
 
+Note: this kind of menu requires `arbitrary` to be set in the group.
+
 Note: when writing the {rhs} of the custom command, if any special character
-is presey, the {rhs} must use `double quotes` and the special characters must
+is present, the {rhs} must use `double quotes` and the special characters must
 be escaped. Only the following ones are accepted:
 
-		<cr> 	    -> `"\<cr>"`
-		<space> 	-> `"\<space>"`
-		<bar> 	  -> `"\<bar>"`
+    <cr>      -> `"\<cr>"`
+    <space>   -> `"\<space>"`
+    <bar>     -> `"\<bar>"`
 
 
 
@@ -259,19 +270,20 @@ An example of arbitrary and interactive group with git commands:
     nnoremap \G :ShowDos \G<cr>
 
     let g:vimdo['\G'] = {
-          \'label' : 'git commands', 'interactive':1,
+          \'label' : 'git commands', 'interactive':1, 'arbitrary': 1,
           \'compact':1, 'keys_width': 8, 'desc_width': 30,
-          \'r':  ['reset', 0, ":echo system('git reset')\<cr>"],
+					\'order': split('scarbplw.dDA', '\zs'),
           \'s':  ['status', 0, ":Gstatus\<cr>"],
-					\'D':  ['diff HEAD', 0, ":Gvsplit! diff HEAD\<cr>:setf git\<cr>:set foldmethod=syntax\<cr>"],
+					\'c':  ['commit', 0, ":Gcommit\<cr>"],
+					\'a':  ['amend', 0, ":Gstatus\<cr>ca\<cr>"],
+          \'r':  ['reset', 0, ":echo system('git reset')\<cr>"],
           \'b':  ['blame', 0, ":Gblame\<cr>"],
           \'p':  ['push', 0, ":redraw! \<bar> echo 'Pushing...\t' \<bar> echon system('git push')\<cr>"],
-          \'.':  ['add all', 0, ":echo system('git add .').'Git: added .'\<cr>:GitGutter\<cr>"],
           \'l':  ['log current file', 0, ":Glog\<cr>"],
-          \'c':  ['commit', 0, ":Gcommit\<cr>"],
           \'w':  ['stage file', 0, ":Gwrite\<cr>"],
+          \'.':  ['add all', 0, ":echo system('git add .').'Git: added .'\<cr>"],
           \'d':  ['diff with...', 0, ":Gvdiff\<space>"],
-          \'a':  ['amend', 0, ":Gstatus\<cr>ca\<cr>"],
+          \'D':  ['diff HEAD', 0, ":Gvsplit! diff HEAD\<cr>:setf git\<cr>:set foldmethod=syntax\<cr>"],
           \'A':  ['add all and amend', 0, ":call system('git add .')\<cr>:Gcommit --amend\<cr>:q\<cr>"],
           \}
 
