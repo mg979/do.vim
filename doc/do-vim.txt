@@ -180,16 +180,20 @@ GROUP DICTIONARY                                             *do-vim-dictionary*
 In the created dictionary, there can be these optional keys:
 
 - `label`
+- `simple`
 - `interactive`
 - `require_description`
 - `arbitrary`
 
 `label`: just a label for the header.
 
-`interactive`: if true, run in interactive mode.
+`simple`: no separators.
 
-`require_description`: that is, dict key. May be convenient because, in
-    reality, you don't need to create a dictionary at all, just execute:
+`interactive`: run in interactive mode.
+
+`require_description`: that is, a dict key/value pair. May be convenient
+		because, in reality, you don't need to create a dictionary at all, just
+		execute:
 >
     :ShowDos {prefix}
 <
@@ -206,7 +210,7 @@ In the created dictionary, there can be these optional keys:
 
 
 
-ADVANCED OPTIONS                                               *do-vim-advanced*
+ADVANCED USAGE                                                 *do-vim-advanced*
 ==============================================================================
 
 Used to define the padding of mappings/descriptions
@@ -222,10 +226,55 @@ More group dictionary keys:
 
 `compact`: lets you show a group in a compact way, on multiple columns, without
 		showing the {rhs} of the mapping, only the trigger and the description.
-		Note: it needs `require_description` also set to 1 in the group.
+		Note: if `compact` is set, `require_description` is also considered true.
 
 `keys_width` and `desc_width`: especially useful to set for a group, when
 		using compact mode.
+
+Finally, you can define a command in the group dictionary, without having
+defined a mapping for it. This allows the creation of totally arbitrary
+groups. To do this, the dictionary element must contain:
+>
+    {key} : [ {description}, {noremap}, {rhs} ]
+
+Note: with this system, you can also create contextual menus that execute
+custom commands at keypress!
+
+Note: when writing the {rhs} of the custom command, if any special character
+is presey, the {rhs} must use `double quotes` and the special characters must
+be escaped. Only the following ones are accepted:
+
+		<cr> 	    -> `"\<cr>"`
+		<space> 	-> `"\<space>"`
+		<bar> 	  -> `"\<bar>"`
+
+
+
+EXAMPLES                                                       *do-vim-examples*
+==============================================================================
+
+For this example, `vim-fugitive` is needed.
+An example of arbitrary and interactive group with git commands:
+>
+    nnoremap \G :ShowDos \G<cr>
+
+    let g:vimdo['\G'] = {
+          \'label' : 'git commands', 'interactive':1,
+          \'compact':1, 'keys_width': 8, 'desc_width': 30,
+          \'r':  ['reset', 0, ":echo system('git reset')\<cr>"],
+          \'s':  ['status', 0, ":Gstatus\<cr>"],
+					\'D':  ['diff HEAD', 0, ":Gvsplit! diff HEAD\<cr>:setf git\<cr>:set foldmethod=syntax\<cr>"],
+          \'b':  ['blame', 0, ":Gblame\<cr>"],
+          \'p':  ['push', 0, ":redraw! \<bar> echo 'Pushing...\t' \<bar> echon system('git push')\<cr>"],
+          \'.':  ['add all', 0, ":echo system('git add .').'Git: added .'\<cr>:GitGutter\<cr>"],
+          \'l':  ['log current file', 0, ":Glog\<cr>"],
+          \'c':  ['commit', 0, ":Gcommit\<cr>"],
+          \'w':  ['stage file', 0, ":Gwrite\<cr>"],
+          \'d':  ['diff with...', 0, ":Gvdiff\<space>"],
+          \'a':  ['amend', 0, ":Gstatus\<cr>ca\<cr>"],
+          \'A':  ['add all and amend', 0, ":call system('git add .')\<cr>:Gcommit --amend\<cr>:q\<cr>"],
+          \}
+
 
 ==============================================================================
 vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:

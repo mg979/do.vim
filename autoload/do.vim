@@ -38,12 +38,13 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   let with_filter = !empty(a:filter)
 
   " group dictionary options
-  let require_desc = has_key(group, 'require_description')
-        \            && group.require_description
-  let s:compact    = require_desc && has_key(group, 'compact')
-        \            && group.compact
+  let s:compact    = has_key(group, 'compact') && group.compact
+  let require_desc = s:compact || (has_key(group, 'require_description')
+        \            && group.require_description)
   let interactive  = has_key(group, 'interactive') ?
         \            group.interactive : get(g:, 'vimdo_interactive', 0)
+  let s:simple     = has_key(group, 'simple') ?
+        \            group.simple : get(g:, 'vimdo_simple', 0)
 
   " formatting options
   let keys_width = has_key(group, 'keys_width') ?
@@ -73,25 +74,34 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
 
   let D = {}
   for do in dos
-    let d = maparg(do, mode, 0, 1)
+    let d = s:get_do(group, do, mode)
+    let custom = has_key(d, 'custom')
     if (a:buffer && !d.buffer) ||
-          \ with_filter && match(d.lhs, '^'.pat.a:filter) != 0 ||
-          \ interactive && match(d.lhs, '^'.pat.s:current) != 0 ||
+          \ with_filter && match(d.lhs, '\C^'.pat.a:filter) != 0 ||
+          \ interactive && match(d.lhs, '\C^'.pat.s:current) != 0 ||
           \ match(d.rhs, '^:call do#show_') == 0
       continue
     endif
+
+    " flags as :help map-listing
     let flags = ''
     let flags .= d.noremap ? '*' : ''
     let flags .= d.buffer ? '@' : ''
+
     let key = do[strchars(pre):]
-    let desc = has_key(group, key) ? group[key] : ''
     let file = show_file ? s:get_file(pre.key, mode) : ''
-    if empty(desc) && require_desc | continue | endif
-    let D[key] = [desc, file, flags, d.rhs]
+    let desc = !has_key(group, key) ? '' :
+          \    custom ? d.description : group[key]
+
+    " group requires description
+    if require_desc && empty(desc) | continue | endif
+
+    " finalize dict for display
+    let D[key] = [desc, file, flags, custom ? s:get_rhs(d) : d.rhs]
 
     " interactive: execute the mapping, if it matches the current key
     if interactive && s:current == key
-      call feedkeys(pre.key)
+      call feedkeys(custom ? d.rhs : pre.key)
       return
     endif
   endfor
@@ -120,9 +130,13 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     endfor
     echo "\n"
   else
-    echohl None           | echo sep
-    echohl WarningMsg     | echo lab
-    echohl None           | echo sep
+    if s:simple
+      echohl WarningMsg     | echo lab | echo "\n"
+    else
+      echohl None           | echo sep
+      echohl WarningMsg     | echo lab
+      echohl None           | echo sep
+    endif
     for do in sort(keys(D))
       echohl WarningMsg   | echo  s:pad(do, keys_width)
       echohl Special      | echon s:pad(D[do][0], desc_width)
@@ -135,7 +149,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
         echohl None         | echon s:pad(D[do][3], &columns - 63)
       endif
     endfor
-    echo sep
+    echohl None             | echo s:simple ? "\n" : sep
   endif
   echohl None
 
@@ -149,7 +163,7 @@ endfun
 "------------------------------------------------------------------------------
 
 fun! s:loop(group, show_file, buffer)
-  if !s:compact
+  if !( s:compact || s:simple )
     echo "Press a key to filter the list,"
           \"<space> to reset, or <cr>/<esc> to exit"
   endif
@@ -168,7 +182,7 @@ endfun
 "------------------------------------------------------------------------------
 
 fun! s:interactive(group, show_file, buffer)
-  if !s:compact
+  if !( s:compact || s:simple )
     echo "Press a key to filter the list,"
           \"<space> to reset, or <cr>/<esc> to exit"
   endif
@@ -240,6 +254,22 @@ fun! s:get_maps(group)
   let remove = ['require_description', 'label', 'arbitrary', 'interactive',
         \       'compact', 'keys_width', 'desc_width']
   return filter(keys(a:group), 'index(remove, v:val) < 0')
+endfun
+
+fun! s:get_do(group, do, mode)
+  if !has_key(a:group, a:do) || type(a:group[a:do]) == v:t_string
+    return maparg(a:do, a:mode, 0, 1)
+  else
+    return {'noremap': a:group[a:do][1], 'lhs': a:do, 'rhs': a:group[a:do][2],
+          \ 'buffer': 0, 'custom': 1, 'description': a:group[a:do][0]}
+  endif
+endfun
+
+fun! s:get_rhs(d)
+  let r = substitute(a:d.rhs, "\<cr>", '<cr>', 'g')
+  let r = substitute(r, "\<space>", '<space>', 'g')
+  let r = substitute(r, "\<bar>", '<bar>', 'g')
+  return r
 endfun
 
 fun! do#msg(m, ...)

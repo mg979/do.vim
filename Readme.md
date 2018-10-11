@@ -17,7 +17,7 @@ What's the difference between this and just typing `:nmap do`?
 - it can be run in interactive mode.
 
 But you're not limited to the `do` keyword, you can do the same with any other
-mapping prefix.
+mapping prefix, or create custom groups.
 
 
 ## Installation and usage
@@ -47,6 +47,17 @@ use them together.
 ## Examples
 ------------------------------------------------------------------------------
 
+A compact and interactive group with [git commands](https://github.com/mg979/do.vim/blob/9ba9ee011f11902c411d348ea5142266ae085d78/doc/do-vim.txt#L253):
+
+![Imgur](https://i.imgur.com/GeBhWNA.png)
+
+Filtering a group:
+
+![Imgur](https://i.imgur.com/D5H2aEg.gif)
+
+Normal non-interactive groups:
+
 ![Imgur](https://i.imgur.com/niOSxSr.png)
 ![Imgur](https://i.imgur.com/QZvCr1p.png)
 ![Imgur](https://i.imgur.com/7UkOYZI.png)
+
