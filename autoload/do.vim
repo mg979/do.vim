@@ -109,8 +109,9 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   " interactive: terminate if no matches are found
   if interactive && empty(D) | return do#msg("No matches") | endif
 
+  let s = ' '
   if s:compact
-    let total_space = &columns
+    let total_space = &columns - 1
     let space_left = total_space
     let column_width = keys_width + desc_width + 2
 
@@ -119,9 +120,9 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
       if space_left != total_space
         echohl WarningMsg   | echon  s:pad(do, keys_width)
       else
-        echohl WarningMsg   | echo  s:pad(do, keys_width)
+        echohl WarningMsg   | echo  s.s:pad(do, keys_width)
       endif
-      echohl vimdoDesc      | echon s:pad(D[do][0], desc_width).'  '
+      echohl vimdoDesc      | echon s:pad(D[do][0], desc_width).s
 
       let space_left -= column_width
       if space_left <= column_width
@@ -130,15 +131,15 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     endfor
     echo "\n"
   else
-    if s:simple
-      echohl WarningMsg     | echo lab | echo "\n"
-    else
+    if s:simple && ! (has_key(group, 'label') && interactive)
+      echohl WarningMsg     | echo s.lab | echo "\n"
+    elseif !s:simple
       echohl None           | echo sep
-      echohl WarningMsg     | echo lab
+      echohl WarningMsg     | echo s.lab
       echohl None           | echo sep
     endif
     for do in sort(keys(D))
-      echohl WarningMsg   | echo  s:pad(do, keys_width)
+      echohl WarningMsg   | echo  s.s:pad(do, keys_width)
       echohl Special      | echon s:pad(D[do][0], desc_width)
       if show_file
         echohl Statement    | echon s:pad(D[do][1], 20)
@@ -185,8 +186,12 @@ fun! s:interactive(group, show_file, buffer)
   if !( s:compact || s:simple )
     echo "Press a key to filter the list,"
           \"<space> to reset, or <cr>/<esc> to exit"
+    echo "Current choice:" s:current
+  elseif has_key(g:vimdo[a:group], 'label')
+    echo g:vimdo[a:group].label.":" s:current
+  else
+    echo "Current choice:" s:current
   endif
-  echo "Current choice:" s:current
   let c = getchar()
   if c == 13 || c == 27
     call feedkeys("\<c-l>", 'n')
