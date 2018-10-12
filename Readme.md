@@ -47,7 +47,7 @@ use them together.
 ## Examples
 ------------------------------------------------------------------------------
 
-A compact and interactive group with [git commands](https://github.com/mg979/do.vim/blob/9ba9ee011f11902c411d348ea5142266ae085d78/doc/do-vim.txt#L253):
+A compact and interactive group with [git commands](https://github.com/mg979/do.vim/blob/b5c51e9046d3a122cfb90b0610febdc672ab6b21/doc/do-vim.txt#L264)
 
 ![Imgur](https://i.imgur.com/GeBhWNA.png)
 

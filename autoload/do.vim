@@ -2,6 +2,8 @@
 " Section: Show all do's command                                           {{{1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+let s:winOS = has('win32') || has('win16') || has('win64')
+
 fun! do#show_all_dos(group, ...)
   call s:init()
   if a:0
@@ -29,7 +31,8 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
 
   let group = has_key(g:vimdo, a:group) ? g:vimdo[a:group] : {}
   let pre = a:group
-  let pat = match(pre, '<') == 0 ? pre : fnameescape(pre)
+  let pat = match(pre, '<') == 0 ? pre :
+        \ s:winOS ? substitute(pre, '\', '\\\\', '') : fnameescape(pre)
 
   let sep         = s:repeat_char('-')
   let lab         = has_key(group, 'label') ?  pre."\t\t".group.label : pre
@@ -119,9 +122,9 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
       if space_left != total_space
         echohl WarningMsg   | echon  s:pad(do, keys_width)
       else
-        echohl WarningMsg   | echo  s.s:pad(do, keys_width)
+        echohl WarningMsg   | echo  s . s:pad(do, keys_width)
       endif
-      echohl vimdoDesc      | echon s:pad(D[do][0], desc_width).s
+      echohl vimdoDesc      | echon s:pad(D[do][0], desc_width) . s
 
       let space_left -= column_width
       if space_left <= column_width
@@ -138,7 +141,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
       echohl None           | echo sep
     endif
     for do in sort(keys(D))
-      echohl WarningMsg   | echo  s.s:pad(do, keys_width)
+      echohl WarningMsg   | echo  s . s:pad(do, keys_width)
       echohl Special      | echon s:pad(D[do][0], desc_width)
       if show_file
         echohl Statement    | echon s:pad(D[do][1], 20)
@@ -261,13 +264,12 @@ fun! s:get_maps(group)
 endfun
 
 fun! s:sort_dos(dos, group)
+  if !empty(s:current) || !has_key(a:group, 'order')
+    return sort(keys(a:dos))
+  endif
   try
-    if has_key(a:group, 'order')
-      let l = filter(keys(a:dos), 'v:val != "order"')
-      return map(l, 'a:group.order[v:key]')
-    else
-      return sort(keys(a:dos))
-    endif
+    let l = filter(keys(a:dos), 'v:val != "order"')
+    return map(l, 'a:group.order[v:key]')
   catch
     return sort(keys(a:dos))
   endtry
