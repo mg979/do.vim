@@ -73,6 +73,7 @@ These are the the default commands:
 'dodo'  ->  do diff other file (in next window)
 'dods'  ->  do diff with saved
 'dodl'  ->  do diff with last git revision
+'dodh'  ->  do diff with HEAD
 'dorc'  ->  do redir command (command output to new buffer)
 'dore'  ->  do redir expression (expression to new buffer)
 'dows'  ->  do trim whitespaces
@@ -91,7 +92,8 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dovp  :call do#cmd#profiling()<cr>
   nnoremap dodo  :call do#diff#other()<cr>
   nnoremap dods  :call do#diff#saved()<cr>
-  nnoremap dodl  :call do#diff#last_revision()<cr>
+  nnoremap dodl  :call do#diff#last_revision(0)<cr>
+  nnoremap dodh  :call do#diff#last_revision(1)<cr>
   nnoremap dossa :call do#cmd#syntax_attr()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
   nnoremap dore  :call do#cmd#redir_expression()<cr>

@@ -15,7 +15,8 @@ if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap dovp  :call do#cmd#profiling()<cr>
   nnoremap dods  :call do#diff#saved()<cr>
   nnoremap dodo  :call do#diff#other()<cr>
-  nnoremap dodl  :call do#diff#last_revision()<cr>
+  nnoremap dodl  :call do#diff#last_revision(0)<cr>
+  nnoremap dodh  :call do#diff#last_revision(1)<cr>
   nnoremap dossa :call do#cmd#syntax_attr()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
   nnoremap doec  :call do#color#echo()<cr>
@@ -38,6 +39,7 @@ let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \ 'ec':  'echo color',
       \ 'ft':  'ftplugin file',
       \ 'dl':  'diff last revision',
+      \ 'dh':  'diff with HEAD',
       \ 'ssa': 'show syntax attributes',
       \ 'fcr': 'find files with CRLF endings',
       \}, get(g:vimdo, g:vimdo_default_prefix, {}))

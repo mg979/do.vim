@@ -46,7 +46,7 @@ endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#diff#last_revision()
+fun! do#diff#last_revision(head)
   if !exists('g:loaded_fugitive') | return do#msg("vim-fugitive is needed.") | endif
   let f = s:get_current_file()
 
@@ -55,7 +55,11 @@ fun! do#diff#last_revision()
 
   exe "tabedit" f
   call s:diff_map()
-  Gvdiff
+  if a:head
+    Gvdiff
+  else
+    Gvdiff HEAD^
+  endif
   wincmd w
   call s:diff_map()
   wincmd h
