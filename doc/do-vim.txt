@@ -68,7 +68,7 @@ false:
 >
     :ShowDos! {prefix}
 
-These are the the default commands:
+These are the default commands:
 
 'dodo'  ->  do diff other file (in next window)
 'dods'  ->  do diff with saved
@@ -78,6 +78,8 @@ These are the the default commands:
 'dore'  ->  do redir expression (expression to new buffer)
 'dows'  ->  do trim whitespaces
 'doec'  ->  do echo color infos
+'dosn'  ->  do open snippets file for the current filetype
+						(Ultisnips or Snipmate are required)
 'doft'  ->  do open ftplugin file (if present in $VIMDIR/ftplugin)
 'dout'  ->  do update tags (runs `ctags -R .`, or `b:ctags_cmd` if defined)
 'dovp'  ->  do vim profiling (first time activates, second time stops and quits)
@@ -99,6 +101,7 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dore  :call do#cmd#redir_expression()<cr>
   nnoremap doec  :call do#color#echo()<cr>
   nnoremap doft  :call do#cmd#open_ftplugin()<cr>
+  nnoremap dosn  :call do#cmd#snippets()<cr>
   nnoremap dorc  :RedirCommand<space>
   command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
 
@@ -135,12 +138,16 @@ An example of creating a new group:
   nnoremap \gd  :Gvdiff<Space>
   nnoremap \gC  :Gcommit --amend<cr>
   nnoremap \gA  :call system("git add .")<cr>:Gcommit --amend<cr>
+	nnoremap \gbl :call do#git#blame_line(1)<cr>
+	nnoremap \gbL :call do#git#blame_line(0)<cr>
 
   let g:vimdo = {}
   let g:vimdo['\g'] = { 'label' : 'git commands', 'require_description': 1,
     \'r':  'reset',
     \'s':  'status',
     \'b':  'blame',
+		\'bl': 'blame current line (cmdline)',
+		\'bL': 'blame current line (buffer)',
     \'p':  'push',
     \'a':  'add all',
     \'l':  'log',
@@ -158,7 +165,7 @@ What happens here?
 - you initialize the `g:vimdo` dict (if you didn't already!)
 - you create a key inside of it, that is the mapping prefix you are using.
 - you populate this key with the continuation of each mapping, and set a description.
-- finally you crate a mapping to show your group.
+- finally you create a mapping to show your group.
 
 
 
@@ -230,6 +237,7 @@ More optional group dictionary keys:
 - `order`
 - `keys_width`
 - `desc_width`
+- `show_rhs`
 
 `compact`: lets you show a group in a compact way, on multiple columns, without
     showing the {rhs} of the mapping, only the trigger and the description.
@@ -241,6 +249,9 @@ More optional group dictionary keys:
 
 `keys_width` and `desc_width`: especially useful to set for a group, when
     using compact mode.
+
+`show_rhs`: if present and set to 0, will prevent the rhs of the mappings from
+		being displayed.
 
 Finally, you can define a command in the group dictionary, without having
 defined a mapping for it. This allows the creation of totally arbitrary
@@ -275,18 +286,20 @@ An example of arbitrary and interactive group with git commands:
           \'label' : 'git commands', 'interactive':1, 'arbitrary': 1,
           \'compact':1, 'keys_width': 8, 'desc_width': 30,
 					\'order': split('scarbplw.dDA', '\zs'),
-          \'s':  ['status', 0, ":Gstatus\<cr>"],
-					\'c':  ['commit', 0, ":Gcommit\<cr>"],
-					\'a':  ['amend', 0, ":Gstatus\<cr>ca\<cr>"],
-          \'r':  ['reset', 0, ":echo system('git reset')\<cr>"],
-          \'b':  ['blame', 0, ":Gblame\<cr>"],
-          \'p':  ['push', 0, ":redraw! \<bar> echo 'Pushing...\t' \<bar> echon system('git push')\<cr>"],
-          \'l':  ['log current file', 0, ":Glog\<cr>"],
-          \'w':  ['stage file', 0, ":Gwrite\<cr>"],
-          \'.':  ['add all', 0, ":echo system('git add .').'Git: added .'\<cr>"],
-          \'d':  ['diff with...', 0, ":Gvdiff\<space>"],
-          \'D':  ['diff HEAD', 0, ":Gvsplit! diff HEAD\<cr>:setf git\<cr>:set foldmethod=syntax\<cr>"],
-          \'A':  ['add all and amend', 0, ":call system('git add .')\<cr>:Gcommit --amend\<cr>:q\<cr>"],
+          \'s':  ['status',                       1, ":Gstatus\<cr>"],
+					\'c':  ['commit',                       1, ":Gcommit\<cr>"],
+					\'a':  ['amend',                        1, ":Gstatus\<cr>ca\<cr>"],
+          \'r':  ['reset',                        1, ":echo system('git reset')\<cr>"],
+          \'b':  ['blame',                        1, ":Gblame\<cr>"],
+          \'p':  ['push',                         1, ":redraw! \<bar> echo 'Pushing...\t' \<bar> echon system('git push')\<cr>"],
+					\'bl': ['blame current line (cmdline)', 1, ":call do#git#blame_line(1)\<cr>"],
+					\'bL': ['blame current line (buffer)',  1, ":call do#git#blame_line(0)\<cr>"],
+          \'l':  ['log current file',             1, ":Glog\<cr>"],
+          \'w':  ['stage file',                   1, ":Gwrite\<cr>"],
+          \'.':  ['add all',                      1, ":echo system('git add .').'Git: added .'\<cr>"],
+          \'d':  ['diff with...',                 1, ":Gvdiff\<space>"],
+          \'D':  ['diff HEAD',                    1, ":Gvsplit! diff HEAD\<cr>:setf git\<cr>:set foldmethod=syntax\<cr>"],
+          \'A':  ['add all and amend',            1, ":call system('git add .')\<cr>:Gcommit --amend\<cr>:q\<cr>"],
           \}
 
 

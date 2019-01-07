@@ -70,6 +70,19 @@ endfun
 "------------------------------------------------------------------------------
 
 
+fun! do#cmd#snippets()                                                    "{{{2
+  if exists('g:did_plugin_ultisnips')
+    UltiSnipsEdit
+  elseif exists('g:loaded_snips')
+    SnipMateOpenSnippetFiles
+  else
+    echo "[do.vim] No snippets plugin detected."
+  endif
+endfun
+
+"------------------------------------------------------------------------------
+
+
 fun! do#cmd#update_tags()                                                 "{{{2
   let cmd = get(b:, 'ctags_cmd', "ctags -R .")
   let error = system(cmd)

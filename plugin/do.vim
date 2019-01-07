@@ -21,6 +21,7 @@ if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
   nnoremap doec  :call do#color#echo()<cr>
   nnoremap doft  :call do#cmd#open_ftplugin()<cr>
+  nnoremap dosn  :call do#cmd#snippets()<cr>
 
   nnoremap dorc  :RedirCommand<space>
   command! -nargs=* -complete=command RedirCommand call do#cmd#redir_cmd(<f-args>)
@@ -40,6 +41,7 @@ let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \ 'ft':  'ftplugin file',
       \ 'dl':  'diff last revision',
       \ 'dh':  'diff with HEAD',
+      \ 'sn':  'open snippets file',
       \ 'ssa': 'show syntax attributes',
       \ 'fcr': 'find files with CRLF endings',
       \}, get(g:vimdo, g:vimdo_default_prefix, {}))

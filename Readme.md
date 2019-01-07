@@ -47,6 +47,8 @@ use them together.
 ## Examples
 ------------------------------------------------------------------------------
 
+More examples in the [wiki](https://github.com/mg979/do.vim/wiki).
+
 A compact and interactive group with [git commands](https://github.com/mg979/do.vim/blob/b5c51e9046d3a122cfb90b0610febdc672ab6b21/doc/do-vim.txt#L264)
 
 ![Imgur](https://i.imgur.com/GeBhWNA.png)

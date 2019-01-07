@@ -48,6 +48,8 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
         \            group.interactive : get(g:, 'vimdo_interactive', 0)
   let s:simple     = has_key(group, 'simple') ?
         \            group.simple : get(g:, 'vimdo_simple', 0)
+  let s:show_rhs   = has_key(group, 'show_rhs') ?
+        \            group.show_rhs : get(g:, 'vimdo_show_rhs', 1)
 
   " formatting options
   let keys_width = has_key(group, 'keys_width') ?
@@ -147,7 +149,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
         echohl Statement    | echon s:pad(D[do][1], 20)
         echohl Special      | echon s:pad(D[do][2], 3)
         echohl None         | echon s:pad(D[do][3], &columns - 83)
-      else
+      elseif s:show_rhs
         echohl Statement    | echon s:pad(D[do][2], 3)
         echohl None         | echon s:pad(D[do][3], &columns - 63)
       endif
@@ -259,7 +261,7 @@ endfun
 
 fun! s:get_maps(group)
   let remove = ['require_description', 'label', 'arbitrary', 'interactive',
-        \       'compact', 'keys_width', 'desc_width']
+        \       'compact', 'keys_width', 'desc_width', 'simple', 'show_rhs']
   return filter(keys(a:group), 'index(remove, v:val) < 0')
 endfun
 
@@ -276,9 +278,22 @@ fun! s:sort_dos(dos, group)
 endfun
 
 fun! s:get_do(group, do, mode)
-  if !has_key(a:group, a:do) || type(a:group[a:do]) == v:t_string
+  if !has_key(a:group, a:do)
+    " not a custom dictionary, check for a mapped key
     return maparg(a:do, a:mode, 0, 1)
+
+  elseif type(a:group[a:do]) == v:t_string
+    if !s:show_rhs
+      " we don't want to show the rhs, it's a custom dictionary
+      return {'noremap': 0, 'lhs': a:do, 'rhs': '',
+            \ 'buffer': 0, 'custom': 1, 'description': a:group[a:do]}
+    else
+      " it's an entry for an existing mapping
+      return maparg(a:do, a:mode, 0, 1)
+    endif
+
   else
+    " it's an arbitrary group with custom rhs
     return {'noremap': a:group[a:do][1], 'lhs': a:do, 'rhs': a:group[a:do][2],
           \ 'buffer': 0, 'custom': 1, 'description': a:group[a:do][0]}
   endif
