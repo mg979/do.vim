@@ -4,21 +4,23 @@
 
 let s:winOS = has('win32') || has('win16') || has('win64')
 
-fun! do#show_all_dos(group, ...)
+fun! do#show_all_dos(gr, ...)
   call s:init()
+  let group = empty(a:gr) ? g:vimdo_default_prefix : a:gr
   if a:0
-    call s:show_all_dos(a:group, a:1, 0, '')
+    call s:show_all_dos(group, a:1, 0, '')
   else
-    call s:show_all_dos(a:group, 0, 0, '')
+    call s:show_all_dos(group, 0, 0, '')
   endif
 endfun
 
-fun! do#show_buffer_dos(group, ...)
+fun! do#show_buffer_dos(gr, ...)
   call s:init()
+  let group = empty(a:gr) ? g:vimdo_default_prefix : a:gr
   if a:0
-    call s:show_all_dos(a:group, a:1, 1, '')
+    call s:show_all_dos(group, a:1, 1, '')
   else
-    call s:show_all_dos(a:group, 0, 1, '')
+    call s:show_all_dos(group, 0, 1, '')
   endif
 endfun
 
@@ -61,16 +63,21 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     let dos = s:get_maps(group)
     let pre = ''
     let pat = ''
+    let show_file = 0
   else
     redir => dos
     silent! exe mode.'map '.pre
     redir END
     let dos = split(dos, '\n')
+    let pre = substitute(pre, '<leader>', get(g:, 'mapleader', '\'), 'g')
+    let pat = substitute(pat, '<leader>', get(g:, 'mapleader', '\'), 'g')
+    let pat = substitute(pat, '<cr>', '<CR>', 'g')
+    let pat = substitute(pat, '<space>', '<Space>', 'g')
     for i in range(len(dos))
       let dos[i] = substitute(dos[i], 'n  ', '', '')
       let dos[i] = substitute(dos[i], '\s.*', '', '')
     endfor
-    call filter(dos, "v:val =~ '^".pat."\\S'")
+    call filter(dos, "v:val =~ '^".pat."'")
   endif
 
   " no results
@@ -121,6 +128,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
 
     echo "\n"
     for do in s:sort_dos(D, group)
+      if !has_key(D, do) | continue | endif
       if space_left != total_space
         echohl WarningMsg   | echon  s:pad(do, keys_width)
       else
@@ -255,7 +263,6 @@ fun! s:get_file(map, mode)
       break
     endif
   endfor
-  let m = substitute(m, '.*\s', '', '')
   return fnamemodify(m, ':t')
 endfun
 
@@ -268,13 +275,9 @@ endfun
 fun! s:sort_dos(dos, group)
   if !empty(s:current) || !has_key(a:group, 'order')
     return sort(keys(a:dos))
+  else
+    return a:group.order
   endif
-  try
-    let l = filter(keys(a:dos), 'v:val != "order"')
-    return map(l, 'a:group.order[v:key]')
-  catch
-    return sort(keys(a:dos))
-  endtry
 endfun
 
 fun! s:get_do(group, do, mode)
