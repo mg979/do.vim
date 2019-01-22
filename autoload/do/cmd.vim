@@ -56,11 +56,17 @@ endfun
 
 fun! do#cmd#open_ftplugin()                                               "{{{2
   if !exists('$VIMDIR')
-   call do#msg('You need to set $VIMDIR in your vimrc')
-  elseif !isdirectory($VIMDIR.'/ftplugin')
-   call do#msg('No ftplugin directory in your vim directory')
-  elseif filereadable($VIMDIR.'/ftplugin/'.&filetype.'.vim')
-    exe "edit" $VIMDIR.'/ftplugin/'.&filetype.'.vim'
+    return do#msg('You need to set $VIMDIR in your vimrc')
+  endif
+  if isdirectory($VIMDIR.'/after/ftplugin')
+    let dir = $VIMDIR.'/after/ftplugin/'
+  elseif isdirectory($VIMDIR.'/ftplugin')
+    let dir = $VIMDIR.'/ftplugin/'
+  else
+    return do#msg('No ftplugin directory in your vim directory')
+  endif
+  if filereadable(dir . &filetype . '.vim')
+    exe "edit" dir . &filetype . '.vim'
   else
    call do#msg('No ftplugin file in your vim directory for this filetype')
   endif
@@ -82,12 +88,31 @@ endfun
 
 "------------------------------------------------------------------------------
 
+fun! s:tags_cmd()
+  """Get the tags command."""
+  let win = has('win32') || has('win64')
+  let cmd = 'ctags -R'.(win ? ' --output-format=e-ctags' : '')
+  return get(b:, 'ctags_cmd', get(g:, 'fzf_tags_command', cmd))
+endfun
 
 fun! do#cmd#update_tags()                                                 "{{{2
-  let cmd = get(b:, 'ctags_cmd', "ctags -R .")
-  let error = system(cmd)
+  if filereadable('./.git/tags') && filereadable('./.git/hooks/ctags')
+    let f = './.git/tags'
+    let error = system('./.git/hooks/ctags')
+  elseif filereadable('./.git/tags')
+    let f = './.git/tags'
+    let error = system(s:tags_cmd() . ' -f '.f)
+  elseif filereadable('./tags')
+        \ || confirm('tags not found. Generate?', "&Yes\n&No", 2) == 1
+    let f = './tags'
+    let error = system(s:tags_cmd())
+  else
+    redraw!
+    call do#msg("Tags not updated.")
+    return
+  endif
   if empty(error)
-    call do#msg("Tags updated.", 1)
+    call do#msg("Tags in ".f." updated.", 1)
   else
     call do#msg(error)
   endif
