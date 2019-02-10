@@ -143,14 +143,18 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     endfor
     echo "\n"
   else
-    if s:simple && ! (has_key(group, 'label') && interactive)
-      echohl WarningMsg     | echo s.lab | echo "\n"
-    elseif !s:simple
+    if s:simple
+      if !( has_key(group, 'label') && interactive )
+        echo s.lab
+      endif
+      echo "\n"
+    else
       echohl None           | echo sep
       echohl WarningMsg     | echo s.lab
       echohl None           | echo sep
     endif
-    for do in sort(keys(D))
+    for do in s:sort_dos(D, group)
+      if !has_key(D, do) | continue | endif
       echohl WarningMsg   | echo  s . s:pad(do, keys_width)
       echohl Special      | echon s:pad(D[do][0], desc_width)
       if show_file
@@ -276,7 +280,8 @@ fun! s:sort_dos(dos, group)
   if !empty(s:current) || !has_key(a:group, 'order')
     return sort(keys(a:dos))
   else
-    return a:group.order
+    let order = copy(a:group.order)
+    return order
   endif
 endfun
 
