@@ -281,6 +281,12 @@ fun! s:sort_dos(dos, group)
     return sort(keys(a:dos))
   else
     let order = copy(a:group.order)
+    let all = sort(keys(a:dos))
+    for k in all
+      if index(order, k) < 0 && k != 'order'
+        call add(order, k)
+      endif
+    endfor
     return order
   endif
 endfun
