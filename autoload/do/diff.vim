@@ -25,7 +25,7 @@ fun! do#diff#other()
   call s:diff_map()
   wincmd p
   redraw!
-  call do#msg("q: back, ]c: next change, [c: previous change, do: diffget, dp: diffput", 1)
+  call do#msg("q: back", 1)
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -41,7 +41,7 @@ fun! do#diff#saved()
   call s:diff_map()
   wincmd x
   redraw!
-  call do#msg("q: back, ]c: next change, [c: previous change, do: diffget, dp: diffput", 1)
+  call do#msg("q: back", 1)
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -67,7 +67,7 @@ fun! do#diff#last_revision(head)
     wincmd x
   endif
   redraw!
-  call do#msg("q: back, ]c: next change, [c: previous change, do: diffget, dp: diffput", 1)
+  call do#msg("q: back", 1)
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -93,10 +93,6 @@ fun! s:diff_map()
   setlocal nocursorline
   nnoremap <buffer><silent><nowait> <leader>q   :exe "normal! ".<sid>Tab()."gt"<cr>
   nnoremap <buffer><silent><nowait> q           :exe "normal! ".<sid>Tab()."gt"<cr>
-  nnoremap <buffer><silent><nowait> ]c          ]c
-  nnoremap <buffer><silent><nowait> [c          [c
-  nnoremap <buffer><silent><nowait> do          do
-  nnoremap <buffer><silent><nowait> dp          dp
 endfun
 
 fun! s:diff_unmap()
@@ -105,10 +101,6 @@ fun! s:diff_unmap()
     silent! exe "b ".buf[0]
     silent! unmap <buffer> <leader>q
     silent! unmap <buffer> q
-    silent! unmap <buffer> ]c
-    silent! unmap <buffer> [c
-    silent! unmap <buffer> do
-    silent! unmap <buffer> dp
     diffoff
   endfor
   let s:diffed_buffers = []
