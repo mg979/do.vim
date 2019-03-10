@@ -10,17 +10,21 @@ fun! do#git#blame_line(cmline, ...)
   let format = a:0 ? a:1 : short
   let str = system("git show " . format . "$(git blame " .
         \ file . " -L " . line . " | awk '{print $1}')")
-  if a:cmline
+  if a:cmline || v:shell_error
     call s:echo_blame(str)
   else
+    let line = '\V'.escape(getline('.'), '\')
     new
+    wincmd H
     put = str
     setf git
     normal! ggdd
-    nnoremap <buffer><nowait><silent> q :q!<cr>
+    nnoremap <buffer><nowait><silent> q :q!<cr>:nohlsearch<cr>
     setlocal buftype=nofile bufhidden=wipe noswapfile nobuflisted
     set foldmethod=syntax
-    normal! zm
+    keeppatterns let @/ = line
+    call matchadd('Search', line)
+    silent! normal! zmnzogg
   endif
 endfun
 
