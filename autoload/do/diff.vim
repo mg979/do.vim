@@ -78,7 +78,7 @@ fun! s:get_current_file()
   let s:T = tabpagenr()
   let f = resolve(expand("%:p"))
   let s:filetype = &ft
-  return f
+  return escape(f, ' ')
 endfun
 
 fun! s:Tab()
