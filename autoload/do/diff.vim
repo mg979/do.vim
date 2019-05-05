@@ -9,23 +9,18 @@ fun! do#diff#other()
   if len(bufs) < 2
     return do#msg("There must be at least 2 buffers in the tab page")
   endif
-  let f = s:get_current_file()
-  let buf1 = bufnr("%")
-  wincmd w
-  let f2 = s:get_current_file()
-  let buf2 = bufnr("%")
-  wincmd p
-  if f == f2
-    return do#diff#saved()
+  if !&diff
+    diffthis
+    nnoremap <buffer><silent><nowait> q :windo diffoff<cr>:nunmap <buffer> q<cr>
   endif
-  let was_left = index(bufs, buf1) < index(bufs, buf2)
-  exe "tabedit" f
-  call s:diff_map()
-  exe ( was_left ? "rightbelow " : "" ) . "vs " . f2
-  call s:diff_map()
+  wincmd w
+  if !&diff
+    diffthis
+    nnoremap <buffer><silent><nowait> q :windo diffoff<cr>:nunmap <buffer> q<cr>
+  endif
   wincmd p
   redraw!
-  call do#msg("q: back", 1)
+  call do#msg("q: diffoff", 1)
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
