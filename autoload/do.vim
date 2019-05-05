@@ -278,10 +278,10 @@ endfun
 
 fun! s:sort_dos(dos, group)
   if !empty(s:current) || !has_key(a:group, 'order')
-    return sort(keys(a:dos))
+    return sort(keys(a:dos), 'i')
   else
     let order = copy(a:group.order)
-    let all = sort(keys(a:dos))
+    let all = sort(keys(a:dos), 'i')
     for k in all
       if index(order, k) < 0 && k != 'order'
         call add(order, k)
