@@ -21,6 +21,7 @@ if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
   nnoremap doec  :call do#color#echo()<cr>
   nnoremap doft  :call do#cmd#open_ftplugin()<cr>
+  nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>
   nnoremap dosn  :call do#cmd#snippets()<cr>
 
   nnoremap dorc  :RedirCommand<space>
@@ -39,6 +40,7 @@ let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \ 'do':  'diff other',
       \ 'ec':  'echo color',
       \ 'ft':  'ftplugin file',
+      \ 'fT':  'ftplugin file (default)',
       \ 'dl':  'diff last revision',
       \ 'dh':  'diff with HEAD',
       \ 'sn':  'open snippets file',

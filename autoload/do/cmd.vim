@@ -53,23 +53,29 @@ endfun
 
 "------------------------------------------------------------------------------
 
+fun! do#cmd#open_ftplugin(...)                                            "{{{2
+  let scripts = filter(split(execute('scriptnames'), "\0"),
+        \              'v:val =~ "\/ftplugin\/'.&ft.'\.vim"')
+  let pat = has('nvim') ? '\/share\/nvim' : '\d\d'
+  let default = filter(copy(scripts), 'v:val =~ '''.pat.'''')
+  call filter(scripts, 'v:val !~ '''.pat.'''')
+  let ok = 0
 
-fun! do#cmd#open_ftplugin()                                               "{{{2
-  if !exists('$VIMDIR')
-    return do#msg('You need to set $VIMDIR in your vimrc')
-  endif
-  if isdirectory($VIMDIR.'/after/ftplugin')
-    let dir = $VIMDIR.'/after/ftplugin/'
-  elseif isdirectory($VIMDIR.'/ftplugin')
-    let dir = $VIMDIR.'/ftplugin/'
-  else
-    return do#msg('No ftplugin directory in your vim directory')
-  endif
-  if filereadable(dir . &filetype . '.vim')
-    exe "edit" dir . &filetype . '.vim'
-  else
-   call do#msg('No ftplugin file in your vim directory for this filetype')
-  endif
+  for script in ( a:0 ? default : scripts )
+    try
+      exe "leftabove vs" script
+      let ok = 1
+    catch
+      continue
+    endtry
+  endfor
+
+  if ok | return | endif
+  try
+    exe "leftabove vs" default[0]
+  catch
+    call do#msg('No ftplugin file in standard locations')
+  endtry
 endfun
 
 

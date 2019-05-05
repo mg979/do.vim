@@ -80,7 +80,8 @@ These are the default commands:
 'doec'  ->  do echo color infos
 'dosn'  ->  do open snippets file for the current filetype
 						(Ultisnips or Snipmate are required)
-'doft'  ->  do open ftplugin file (if present in $VIMDIR/ftplugin)
+'doft'  ->  do open ftplugin file (custom preferred)
+'dofT'  ->  do open ftplugin file (vim/nvim default only)
 'dout'  ->  do update tags (runs `ctags -R .`, or `b:ctags_cmd` if defined)
 'dovp'  ->  do vim profiling (first time activates, second time stops and quits)
 'dossa' ->  do print syntax infos for word under cursor
@@ -101,6 +102,7 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dore  :call do#cmd#redir_expression()<cr>
   nnoremap doec  :call do#color#echo()<cr>
   nnoremap doft  :call do#cmd#open_ftplugin()<cr>
+  nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>
   nnoremap dosn  :call do#cmd#snippets()<cr>
   nnoremap dorc  :RedirCommand<space>
   command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
