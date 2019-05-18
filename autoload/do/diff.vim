@@ -11,16 +11,27 @@ fun! do#diff#other()
   endif
   if !&diff
     diffthis
-    nnoremap <buffer><silent><nowait> q :windo diffoff<cr>:nunmap <buffer> q<cr>
+    nnoremap <buffer><silent><nowait> q :<c-u>call <sid>unmap()<cr>
   endif
   wincmd w
   if !&diff
     diffthis
-    nnoremap <buffer><silent><nowait> q :windo diffoff<cr>:nunmap <buffer> q<cr>
+    nnoremap <buffer><silent><nowait> q :<c-u>call <sid>unmap()<cr>
   endif
   wincmd p
   redraw!
   call do#msg("q: diffoff", 1)
+endfun
+
+fun! s:unmap()
+  nunmap <buffer> q
+  let w = winnr()
+  if &diff
+    windo diffoff
+    exe w.'wincmd w'
+  else
+    call feedkeys('q')
+  endif
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
