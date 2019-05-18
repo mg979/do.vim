@@ -56,14 +56,18 @@ endfun
 fun! do#cmd#open_ftplugin(...)                                            "{{{2
   let scripts = filter(split(execute('scriptnames'), "\0"),
         \              'v:val =~ "\/ftplugin\/'.&ft.'\.vim"')
-  let pat = has('nvim') ? '\/share\/nvim' : '\d\d'
+  let pat = has('nvim') ? '\/share\/nvim' : 'vim\/vim\d\d'
   let default = filter(copy(scripts), 'v:val =~ '''.pat.'''')
   call filter(scripts, 'v:val !~ '''.pat.'''')
   let ok = 0
 
   for script in ( a:0 ? default : scripts )
     try
-      exe "leftabove vs" script
+      if !ok
+        exe "leftabove vs" script
+      else
+        exe "rightbelow sp" script
+      endif
       let ok = 1
     catch
       continue
