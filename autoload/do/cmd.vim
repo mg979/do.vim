@@ -98,28 +98,15 @@ endfun
 
 "------------------------------------------------------------------------------
 
-fun! s:tags_cmd()
-  """Get the tags command."""
-  let win = has('win32') || has('win64')
-  let cmd = 'ctags -R'.(win ? ' --output-format=e-ctags' : '')
-  return get(b:, 'ctags_cmd', get(g:, 'fzf_tags_command', cmd))
-endfun
-
 fun! do#cmd#update_tags()                                                 "{{{2
-  if filereadable('./.git/tags') && filereadable('./.git/hooks/ctags')
-    let f = './.git/tags'
-    let error = system('./.git/hooks/ctags')
-  elseif filereadable('./.git/tags')
-    let f = './.git/tags'
-    let error = system(s:tags_cmd() . ' -f '.f)
-  elseif filereadable('./tags')
+  if filereadable('./tags')
         \ || confirm('tags not found. Generate?', "&Yes\n&No", 2) == 1
     let f = './tags'
-    let error = system(s:tags_cmd())
+    let cmd = get(b:, 'ctags_cmd', get(g:, 'fzf_tags_command', 'ctags -R'))
+    let error = system(cmd)
   else
     redraw!
-    call do#msg("Tags not updated.")
-    return
+    return do#msg("Tags not updated.")
   endif
   if empty(error)
     call do#msg("Tags in ".f." updated.", 1)
