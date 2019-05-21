@@ -69,10 +69,9 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     silent! exe mode.'map '.pre
     redir END
     let dos = split(dos, '\n')
-    let pre = substitute(pre, '<leader>', get(g:, 'mapleader', '\'), 'g')
-    let pat = substitute(pat, '<leader>', get(g:, 'mapleader', '\'), 'g')
-    let pat = substitute(pat, '<cr>', '<CR>', 'g')
-    let pat = substitute(pat, '<space>', '<Space>', 'g')
+    let pre = substitute(pre, '\c<leader>', get(g:, 'mapleader', '\'), 'g')
+    let pat = substitute(pat, '\c<leader>', get(g:, 'mapleader', '\'), 'g')
+    let pat = substitute(pat, '<\([^>]\+\)>', '<\U\1>', 'g')
     for i in range(len(dos))
       let dos[i] = substitute(dos[i], 'n  ', '', '')
       let dos[i] = substitute(dos[i], '\s.*', '', '')
@@ -181,13 +180,12 @@ endfun
 
 fun! s:loop(group, show_file, buffer)
   if !( s:compact || s:simple )
-    echo "Press a key to filter the list,"
-          \"<space> to reset, or <cr>/<esc> to exit"
+    echo 'Press a key to filter the list, <C-L> to reset, or <ESC> to exit'
   endif
   let c = getchar()
-  if c == 13 || c == 27
+  if c == 27
     call feedkeys("\<cr>", 'n')
-  elseif c == 32
+  elseif c == 12
     redraw!
     call s:show_all_dos(a:group, a:show_file, a:buffer, '')
   else
@@ -200,8 +198,7 @@ endfun
 
 fun! s:interactive(group, show_file, buffer)
   if !( s:compact || s:simple )
-    echo "Press a key to filter the list,"
-          \"<space> to reset, or <cr>/<esc> to exit"
+    echo 'Press a key to filter the list, <C-L> to reset, or <ESC> to exit'
     echo "Current choice:" s:current
   elseif has_key(g:vimdo[a:group], 'label')
     echo g:vimdo[a:group].label.":" s:current
@@ -209,11 +206,10 @@ fun! s:interactive(group, show_file, buffer)
     echo "Current choice:" s:current
   endif
   let c = getchar()
-  if c == 13 || c == 27
-    call feedkeys("\<c-l>", 'n')
-  elseif c == 32
+  if c == 27
+    call feedkeys("\<cr>", 'n')
+  elseif c == 12
     redraw!
-    let s:current = ''
     call s:show_all_dos(a:group, a:show_file, a:buffer, '')
   else
     redraw!
