@@ -54,9 +54,12 @@ endfun
 "------------------------------------------------------------------------------
 
 fun! do#cmd#open_ftplugin(...)                                            "{{{2
+  let sl = has('win32') ? '\\\\' : "\/"
   let scripts = filter(split(execute('scriptnames'), "\0"),
-        \              'v:val =~ "\/ftplugin\/'.&ft.'\.vim"')
-  let pat = has('nvim') ? '\/share\/nvim' : 'vim\/vim\d\d'
+        \              'v:val =~ "'.sl.'ftplugin'.sl.&ft.'\.vim"')
+  let pat = has('win32') ?
+        \     has('nvim') ? '\\share\\nvim' : escape($VIM, '\')
+        \   : has('nvim') ? '\/share\/nvim' : 'vim\/vim\d\d'
   let default = filter(copy(scripts), 'v:val =~ '''.pat.'''')
   call filter(scripts, 'v:val !~ '''.pat.'''')
   let ok = 0
