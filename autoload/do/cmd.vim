@@ -42,6 +42,52 @@ endfun
 
 "------------------------------------------------------------------------------
 
+fun! do#cmd#dict_mode()                                                   "{{{2
+  if exists('b:is_dict_mode')
+    unlet b:is_dict_mode
+    iunmap <buffer> :
+    iunmap <buffer> ,
+    iunmap <buffer> \:
+    iunmap <buffer> \,
+    iunmap <buffer> \\
+    echo 'dict mode off'
+  else
+    let b:is_dict_mode = 1
+    inoremap <buffer> : <C-R>=<SID>char(':')<CR>
+    inoremap <buffer> , <C-R>=<SID>char(',')<CR>
+    inoremap <buffer> \: :
+    inoremap <buffer> \, ,
+    inoremap <buffer> \\ \
+    echo 'dict mode on'
+  endif
+endfun
+
+fun! s:first_quote()
+  let L  = getline('.')
+  let dq = match(L, '"')
+  let sq = match(L, '''')
+  if dq == -1 && sq == -1
+    return ''
+  endif
+  return    dq>=0 && sq>=0 ? dq<sq ? '"' : ''''
+        \ : dq>=0 && sq<0 ?  '"' : ''''
+endfun
+
+fun! s:char(char) abort
+  let quote = s:first_quote()
+  if quote == '' | return a:char | endif
+  let [ q, q2, c ] = [ quote, quote.quote, a:char ]
+  let [ _, R, L ]  = [ "\<space>", "\<right>", "\<left>" ]
+  let quote_before = matchstr(getline('.'), '\%' . (col('.')-1) . 'c.') == q
+  return col('.') == col('$') ?
+        \     quote_before ?
+        \         c._.q2.L : q.c._.q2.L
+        \  :  quote_before ?
+        \         c._.q2.L : R.c._.q2.L
+endfun
+
+"------------------------------------------------------------------------------
+
 
 fun! do#cmd#trim_whitespaces()                                            "{{{2
   let pos = getpos(".")

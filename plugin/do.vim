@@ -5,7 +5,7 @@
 " Url:         https://github.com/mg979/do.vim
 " License:     The MIT License (MIT)
 " Created:     lun 08 ottobre 2018 17:12:17
-" Modified:    lun 08 ottobre 2018 17:12:17
+" Modified:    lun 27 maggio 2019 19:40:12
 " ========================================================================///
 
 if get(g:, 'vimdo_use_default_commands', 0)
@@ -13,6 +13,7 @@ if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap dore  :call do#cmd#redir_expression()<cr>
   nnoremap dout  :call do#cmd#update_tags()<cr>
   nnoremap dovp  :call do#cmd#profiling()<cr>
+  nnoremap dodm  :call do#cmd#dict_mode()<cr>
   nnoremap dods  :call do#diff#saved()<cr>
   nnoremap dodo  :call do#diff#other()<cr>
   nnoremap dodl  :call do#diff#last_revision(0)<cr>
@@ -38,6 +39,7 @@ let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \ 'vp':  'profiling',
       \ 'ds':  'diff saved',
       \ 'do':  'diff other',
+      \ 'dm':  'dict mode',
       \ 'ec':  'echo color',
       \ 'ft':  'ftplugin file',
       \ 'fT':  'ftplugin file (default)',
