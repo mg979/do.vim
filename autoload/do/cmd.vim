@@ -107,10 +107,28 @@ fun! do#cmd#open_ftplugin(...)                                            "{{{2
         \     has('nvim') ? '\\share\\nvim' : escape($VIM, '\')
         \   : has('nvim') ? '\/share\/nvim' : 'vim\/vim\d\d'
   let default = filter(copy(scripts), 'v:val =~ '''.pat.'''')
-  call filter(scripts, 'v:val !~ '''.pat.'''')
+  if a:0
+    call filter(scripts, 'v:val !~ '''.pat.'''')
+    call extend(scripts, default)
+  else
+    let valid = has('win32') ?
+          \ [('~\vimfiles\after'), ('~\vimfiles\ftplugin')] :
+          \ [('~/.vim/after'), ('~/.vim/ftplugin')]
+    call map(valid, 'resolve(fnamemodify(v:val, ":p"))')
+    call map(scripts, 'resolve(fnamemodify(v:val, ":p"))')
+    let ok = []
+    for path in valid
+      for script in scripts
+        if script =~ path
+          call add(ok, script)
+        endif
+      endfor
+    endfor
+    let scripts = copy(ok)
+  endif
   let ok = 0
 
-  for script in ( a:0 ? default : scripts )
+  for script in scripts
     try
       if !ok
         exe "leftabove vs" script
