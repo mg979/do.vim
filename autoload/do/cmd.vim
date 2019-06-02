@@ -74,13 +74,20 @@ fun! s:first_quote()
 endfun
 
 fun! s:char(char) abort
+  " first, find out the kind of quote, if not yet entered, return the char
   let quote = s:first_quote()
-  if quote == '' | return a:char | endif
+  if empty(quote) | return a:char | endif
+
   let [ q, q2, c ] = [ quote, quote.quote, a:char ]
   let [ _, R, L ]  = [ "\<space>", "\<right>", "\<left>" ]
-  let quote_before = matchstr(getline('.'), '\%' . (col('.')-1) . 'c.') == q
+  let [ ln, cn ] = [ getline('.'), col('.')-2 ]
+
+  " don't add the closing quote if already there, or if it's a digit at EOL
+  let quote_before = ln[cn:cn] == q
+  let digit_before = ln[cn:cn] =~ '[0-9]'
+
   return col('.') == col('$') ?
-        \     quote_before ?
+        \     quote_before || digit_before ?
         \         c._.q2.L : q.c._.q2.L
         \  :  quote_before ?
         \         c._.q2.L : R.c._.q2.L
