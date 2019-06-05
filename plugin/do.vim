@@ -9,21 +9,21 @@
 " ========================================================================///
 
 if get(g:, 'vimdo_use_default_commands', 0)
-  nnoremap dows  :call do#cmd#trim_whitespaces()<cr>
-  nnoremap dore  :call do#cmd#redir_expression()<cr>
-  nnoremap dout  :call do#cmd#update_tags()<cr>
-  nnoremap dovp  :call do#cmd#profiling()<cr>
-  nnoremap dodm  :call do#cmd#dict_mode()<cr>
-  nnoremap dods  :call do#diff#saved()<cr>
-  nnoremap dodo  :call do#diff#other()<cr>
-  nnoremap dodl  :call do#diff#last_revision(0)<cr>
-  nnoremap dodh  :call do#diff#last_revision(1)<cr>
-  nnoremap dossa :call do#cmd#syntax_attr()<cr>
-  nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
-  nnoremap doec  :call do#color#echo()<cr>
-  nnoremap doft  :call do#cmd#open_ftplugin()<cr>
-  nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>
-  nnoremap dosn  :call do#cmd#snippets()<cr>
+  nnoremap <silent> dows  :call do#cmd#trim_whitespaces()<cr>
+  nnoremap <silent> dore  :call do#cmd#redir_expression()<cr>
+  nnoremap <silent> dout  :call do#cmd#update_tags()<cr>
+  nnoremap <silent> dovp  :call do#cmd#profiling()<cr>
+  nnoremap <silent> dodm  :call do#cmd#dict_mode()<cr>
+  nnoremap <silent> dods  :call do#diff#saved()<cr>
+  nnoremap <silent> dodo  :call do#diff#other()<cr>
+  nnoremap <silent> dodl  :call do#diff#last_revision(0)<cr>
+  nnoremap <silent> dodh  :call do#diff#last_revision(1)<cr>
+  nnoremap <silent> dossa :call do#cmd#syntax_attr()<cr>
+  nnoremap <silent> dofcr :call do#cmd#find_crlf(1, "")<cr>
+  nnoremap <silent> doec  :call do#color#echo()<cr>
+  nnoremap <silent> doft  :call do#cmd#open_ftplugin()<cr>
+  nnoremap <silent> dofT  :call do#cmd#open_ftplugin(1)<cr>
+  nnoremap <silent> dosn  :call do#cmd#snippets()<cr>
 
   nnoremap dorc  :RedirCommand<space>
   command! -nargs=* -complete=command RedirCommand call do#cmd#redir_cmd(<f-args>)

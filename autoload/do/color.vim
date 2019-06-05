@@ -2,20 +2,21 @@
 
 fun! do#color#echo()
   """Get the word under cursor and show color informations, if possible."""
-  let c = tolower(expand('<cword>'))
-  if s:is_color(c) && has_key(s:rgb2xterm, c)
-    echo c "->" s:rgb2xterm[c]
+  let c = s:get_color()
+  if c == ''
+    return
+  elseif s:is_color(c) && has_key(s:rgb2xterm, c)
+    echo c '->' s:rgb2xterm[c]
   elseif has_key(s:color_names, c)
-    echo c "->" s:color_names[c]
     if has_key(s:rgb2xterm, s:color_names[c])
-      echon " -> " s:rgb2xterm[s:color_names[c]]
+      echon c '->' s:rgb2xterm[s:color_names[c]]
     else
-      call s:approx(s:color_names[c])
+      echo c '->' s:color_names[c] '->' s:approx(s:color_names[c])
     endif
   elseif match(c, '\D') < 0 && c < 256
-    echo c "->" s:xterm_colors[c]
+    echo c '->' s:xterm_colors[c]
   elseif s:is_color(c)
-    call s:approx(c)
+    echo c '->' s:approx(c)
   else
     echo "Unknown color"
   endif
@@ -23,6 +24,11 @@ fun! do#color#echo()
 endfun
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+fun! s:get_color()
+  let c = tolower(expand('<cWORD>'))
+  return substitute(c, '[^#a-zA-Z0-9]', '', 'g')
+endfun
 
 fun! s:is_color(c)
   return strlen(a:c) == 7 && match(a:c, '#') == 0
@@ -36,8 +42,10 @@ fun! s:approx(c)
     let s = colortemplate#colorspace#approx(a:c)
     let i = s.index
     let d = s.delta
-    echon " -> " i " (~" d ")"
+    return i . " (~ " . string(d) . ")"
   catch
+    echo 'Colortemplate plugin is needed'
+    return ''
   endtry
 endfun
 
