@@ -8,12 +8,21 @@
 " Modified:    lun 27 maggio 2019 19:40:12
 " ========================================================================///
 
+let s:save_cpo = &cpo
+set cpo&vim
+
+"------------------------------------------------------------------------------
+
+if exists('g:loaded_vimdo')
+  finish
+endif
+let g:loaded_vimdo = 1
+
 if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap <silent> dows  :call do#cmd#trim_whitespaces()<cr>
   nnoremap <silent> dore  :call do#cmd#redir_expression()<cr>
   nnoremap <silent> dout  :call do#cmd#update_tags()<cr>
   nnoremap <silent> dovp  :call do#cmd#profiling()<cr>
-  nnoremap <silent> dodm  :call do#cmd#dict_mode()<cr>
   nnoremap <silent> dods  :call do#diff#saved()<cr>
   nnoremap <silent> dodo  :call do#diff#other()<cr>
   nnoremap <silent> dodl  :call do#diff#last_revision(0)<cr>
@@ -39,7 +48,6 @@ let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \ 'vp':  'profiling',
       \ 'ds':  'diff saved',
       \ 'do':  'diff other',
-      \ 'dm':  'dict mode',
       \ 'ec':  'echo color',
       \ 'ft':  'ftplugin file',
       \ 'fT':  'ftplugin file (default)',
@@ -57,3 +65,7 @@ endif
 
 command! -nargs=? -bang ShowDos call do#show_all_dos(<q-args>, <bang>0)
 
+"------------------------------------------------------------------------------
+
+let &cpo = s:save_cpo
+unlet s:save_cpo

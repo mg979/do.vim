@@ -74,7 +74,6 @@ These are the default commands:
 'dods'  ->  do diff with saved
 'dodl'  ->  do diff with last git revision
 'dodh'  ->  do diff with HEAD
-'dodm'  ->  do dictionary mode (auto-insert quotes in dicts with : and ,)
 'dorc'  ->  do redir command (command output to new buffer)
 'dore'  ->  do redir expression (expression to new buffer)
 'dows'  ->  do trim whitespaces
@@ -98,7 +97,6 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dods  :call do#diff#saved()<cr>
   nnoremap dodl  :call do#diff#last_revision(0)<cr>
   nnoremap dodh  :call do#diff#last_revision(1)<cr>
-  nnoremap dodm  :call do#cmd#dict_mode()<cr>
   nnoremap dossa :call do#cmd#syntax_attr()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
   nnoremap dore  :call do#cmd#redir_expression()<cr>
