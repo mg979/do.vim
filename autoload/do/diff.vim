@@ -38,7 +38,10 @@ endfun
 
 fun! do#diff#saved()
   let f = s:get_current_file()
-  let g:xtabline.Vars.tab_properties = {'locked':1}
+  try
+    let g:xtabline.Vars.tab_properties = {'locked':1}
+  catch
+  endtry
   exe "tabedit" f
   call s:diff_map()
   vnew | exe "r" f | normal! 1Gdd
