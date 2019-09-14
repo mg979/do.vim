@@ -20,6 +20,7 @@ let g:loaded_vimdo = 1
 
 if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap <silent> dows  :call do#cmd#trim_whitespaces()<cr>
+  nnoremap <silent> dosw  :call do#cmd#delete_swap()<cr>
   nnoremap <silent> dore  :call do#cmd#redir_expression()<cr>
   nnoremap <silent> dout  :call do#cmd#update_tags()<cr>
   nnoremap <silent> dovp  :call do#cmd#profiling()<cr>

@@ -119,6 +119,17 @@ endfun
 
 "------------------------------------------------------------------------------
 
+fun! do#cmd#delete_swap()                                                 "{{{2
+  let swapfile = &directory . '/' . expand('%:t') . '.swp'
+  if filereadable(swapfile)
+    if confirm('Delete '.swapfile.'?', "&Yes/&No")
+      call delete(swapfile)
+    endif
+  endif
+endfun
+
+"------------------------------------------------------------------------------
+
 fun! do#cmd#update_tags()                                                 "{{{2
   if filereadable('./tags')
         \ || confirm('tags not found. Generate?', "&Yes\n&No", 2) == 1
