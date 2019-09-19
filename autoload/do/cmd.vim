@@ -53,6 +53,20 @@ endfun
 
 "------------------------------------------------------------------------------
 
+
+fun! do#cmd#copy_file()                                                   "{{{2
+  let [ base, ext, n ] = [ expand('%:r'), expand('%:e'), 1 ]
+  let go_left = repeat("\<Left>",len(ext)+1)
+  let new = base . "_copy"
+  while filereadable(new . "." . ext)
+    let n += 1
+    let new = base . "_copy" . n
+  endwhile
+  call feedkeys(":saveas ". new . "." . ext . go_left, 'n')
+endfun
+
+"------------------------------------------------------------------------------
+
 fun! do#cmd#open_ftplugin(...)                                            "{{{2
   let sl = has('win32') ? '\\\\' : "\/"
   let scripts = filter(split(execute('scriptnames'), "\0"),
