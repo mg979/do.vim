@@ -37,6 +37,7 @@ if get(g:, 'vimdo_use_default_commands', 0)
   nnoremap <silent> dows  :call do#cmd#trim_whitespaces()<cr>
 
   nnoremap dorc  :RedirCommand<space>
+  nnoremap do    <NOP>
   command! -nargs=* -complete=command RedirCommand call do#cmd#redir_cmd(<f-args>)
 endif
 
@@ -48,6 +49,7 @@ let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \ 'dl':  'diff last revision',
       \ 'do':  'diff other',
       \ 'ds':  'diff saved',
+      \ 'sw':  'delete swap',
       \ 'ec':  'echo color',
       \ 'fT':  'ftplugin file (default)',
       \ 'fcr': 'find files with CRLF endings',

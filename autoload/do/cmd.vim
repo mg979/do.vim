@@ -132,13 +132,19 @@ fun! do#cmd#snippets()                                                    "{{{2
 endfun
 
 "------------------------------------------------------------------------------
+" Reference: https://superuser.com/a/805168
 
 fun! do#cmd#delete_swap()                                                 "{{{2
-  let swapfile = &directory . '/' . expand('%:t') . '.swp'
-  if filereadable(swapfile)
-    if confirm('Delete '.swapfile.'?', "&Yes/&No")
-      call delete(swapfile)
-    endif
+  let pat = &directory . '/' . expand('%:t') . '.sw[klmnop]*'
+  let swapfiles = glob(pat,0,1)
+  if !empty(swapfiles) && confirm('Delete '.pat.'?', "&Yes\n&No")
+    for sf in swapfiles
+      if delete(sf)
+        echo 'Deleted' sf
+      else
+        echoerr 'Failed to delete' sf . '!'
+      endif
+    endfor
   endif
 endfun
 
