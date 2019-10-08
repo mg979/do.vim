@@ -21,16 +21,16 @@ What's the difference between this and just typing `:nmap ...`?
 ------------------------------------------------------------------------------
 
 Use the main command to show all mappings that start with a prefix:
- 
+
     :ShowDos g
- 
+
 you don't need any customization for this. But if you want to add some
 description to your custom mappings?
 
 Say you have a bunch of mappngs that start with `g`, and you want to add some
 description, so that it will show up when you run the command above.
 You create a group for `g`, and you write the descriptions inside:
- 
+
     let g:vimdo = {}
     let g:vimdo.g = {}
     let g:vimdo.g.cc = 'comment line toggle'
@@ -41,7 +41,7 @@ Where the keys inside the `g` group are the mappings `gcc`, `got`, etc.
 If some of these mappings are `buffer` mappings (for example you defined them
 in a `ftplugin`), you can call the command with a `bang`, and it will only
 show `buffer` mappings:
- 
+
     :ShowDos! g
 
 That's it for a basic usage.
@@ -53,7 +53,7 @@ That's it for a basic usage.
 ------------------------------------------------------------------------------
 
 With vim-plug:
-    
+
     Plug 'mg979/do.vim'
 
 Documentation: `:help do.vim`

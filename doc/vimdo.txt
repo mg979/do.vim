@@ -105,8 +105,8 @@ An example of creating a new group with fugitive.vim commands:
   nnoremap \gd  :Gvdiff<Space>
   nnoremap \gC  :Gcommit --amend<cr>
   nnoremap \gA  :call system("git add -u")<cr>:Gcommit --amend<cr>
-	nnoremap \gbl :call do#git#blame_line(1)<cr>
-	nnoremap \gbL :call do#git#blame_line(0)<cr>
+  nnoremap \gbl :call do#git#blame_line(1)<cr>
+  nnoremap \gbL :call do#git#blame_line(0)<cr>
 
   let g:vimdo = {}
   let g:vimdo['\g'] = { 'label' : 'git commands', 'require_description': 1,
@@ -118,8 +118,8 @@ An example of creating a new group with fugitive.vim commands:
     \'d':  'diff',
     \'C':  'amend commit',
     \'A':  'stage all tracked files and amend',
-		\'bl': 'blame current line (cmdline)',
-		\'bL': 'blame current line (buffer)',
+    \'bl': 'blame current line (cmdline)',
+    \'bL': 'blame current line (buffer)',
     \}
 
   nnoremap \g? :ShowDos \g<cr>
@@ -223,7 +223,7 @@ More optional group dictionary keys:
 
                                                               *vimdo-show_rhs*
 `show_rhs`: if present and set to 0, will prevent the rhs of the mappings from
-		being displayed.
+    being displayed.
 
 Finally, you can define a command in the group dictionary, without having
 defined a mapping for it. This allows the creation of totally arbitrary
@@ -317,4 +317,4 @@ To extend default group with some other commands (example):
 
 
 ==============================================================================
-vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:
+vim:tw=78:et:sw=2:ts=2:ft=help:norl:nowrap:
