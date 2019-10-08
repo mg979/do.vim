@@ -140,7 +140,9 @@ endfun
 fun! do#cmd#delete_swap()                                                 "{{{2
   let pat = &directory . '/' . expand('%:t') . '.sw[klmnop]*'
   let swapfiles = glob(pat,0,1)
-  if !empty(swapfiles) && confirm('Delete '.pat.'?', "&Yes\n&No")
+  let nfiles = len(swapfiles)
+  let question = printf('Delete %s (%s file%s)?', pat, nfiles, nfiles>1?'s':'')
+  if nfiles && confirm(question, "&Yes\n&No") == 1
     for sf in swapfiles
       if delete(sf)
         echo 'Deleted' sf
