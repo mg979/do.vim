@@ -100,8 +100,10 @@ fun! do#cmd#open_ftplugin(...)                                            "{{{2
     try
       if !ok
         exe "leftabove vs" script
+        setfiletype vim
       else
         exe "rightbelow sp" script
+        setfiletype vim
       endif
       let ok = 1
     catch
@@ -112,6 +114,7 @@ fun! do#cmd#open_ftplugin(...)                                            "{{{2
   if ok | return | endif
   try
     exe "leftabove vs" default[0]
+    setfiletype vim
   catch
     call do#msg('No ftplugin file in standard locations')
   endtry
