@@ -1,10 +1,9 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Section: Diff commands                                                   {{{1
+" Section: Diff commands
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-let s:diffed_buffers = []
-
 fun! do#diff#other()
+  "{{{1
   let bufs = tabpagebuflist()
   if len(bufs) < 2
     return do#msg("There must be at least 2 buffers in the tab page")
@@ -21,41 +20,24 @@ fun! do#diff#other()
   wincmd p
   redraw!
   call do#msg("q: diffoff", 1)
-endfun
-
-fun! s:unmap()
-  nunmap <buffer> q
-  let w = winnr()
-  if &diff
-    windo diffoff
-    exe w.'wincmd w'
-  else
-    call feedkeys('q')
-  endif
-endfun
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+endfun "}}}
 
 fun! do#diff#saved()
-  let f = s:get_current_file()
-  try
-    let g:xtabline.Vars.tab_properties = {'locked':1}
-  catch
-  endtry
+  "{{{1
+  let [ f, ft ] = s:get_current_file()
   exe "tabedit" f
   call s:diff_map()
   vnew | exe "r" f | normal! 1Gdd
-  exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . s:filetype
-  let b:XTbuf = {'name': 'Saved file', 'special': 1}
+  exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . ft
+  setlocal statusline=%#Search#\ Saved\ file
   call s:diff_map()
   wincmd x
   redraw!
   call do#msg("q: back", 1)
-endfun
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+endfun "}}}
 
 fun! do#diff#last_revision(head)
+  "{{{1
   if !exists('g:loaded_fugitive') | return do#msg("vim-fugitive is needed.") | endif
   let f = s:get_current_file()
 
@@ -77,26 +59,38 @@ fun! do#diff#last_revision(head)
   endif
   redraw!
   call do#msg("q: back", 1)
+endfun "}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Section: Helpers
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let s:diffed_buffers = []
+
+fun! s:unmap() "{{{1
+  nunmap <buffer> q
+  let w = winnr()
+  if &diff
+    windo diffoff
+    exe w.'wincmd w'
+  else
+    call feedkeys('q')
+  endif
 endfun
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Section: Helpers                                                         {{{1
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-fun! s:get_current_file()
+fun! s:get_current_file() "{{{1
   let s:T = tabpagenr()
   let f = resolve(expand("%:p"))
-  let s:filetype = &ft
-  return escape(f, ' ')
+  return [ escape(f, ' '), &ft ]
 endfun
 
-fun! s:Tab()
+fun! s:Tab() "{{{1
   call s:diff_unmap()
   tabclose
   return s:T
 endfun
 
-fun! s:diff_map()
+fun! s:diff_map() "{{{1
   diffthis
   call add(s:diffed_buffers, ([bufnr("%"), &cursorline]))
   setlocal nocursorline
@@ -104,7 +98,7 @@ fun! s:diff_map()
   nnoremap <buffer><silent><nowait> q           :exe "normal! ".<sid>Tab()."gt"<cr>
 endfun
 
-fun! s:diff_unmap()
+fun! s:diff_unmap() "{{{1
   for buf in s:diffed_buffers
     let &cursorline = buf[1]
     silent! exe "b ".buf[0]
@@ -115,8 +109,9 @@ fun! s:diff_unmap()
   let s:diffed_buffers = []
 endfun
 
-fun! s:is_tracked(file)
+fun! s:is_tracked(file) "{{{1
   call system(fugitive#repo().git_command('ls-files', '--error-unmatch', a:file))
   return !v:shell_error
-endfun
+endfun "}}}
 
+" vim: et sw=2 ts=2 sts=2 fdm=marker

@@ -1,32 +1,43 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Section: Show all do's command                                           {{{1
+" Section: Show all do's command
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-let s:winOS = has('win32') || has('win16') || has('win64')
+""=============================================================================
+" Function: do#show_all_dos
+" Show mappings that belong to the group, with description if it has been set
 
-fun! do#show_all_dos(gr, ...)
-  call s:init()
-  let group = empty(a:gr) ? g:vimdo_default_prefix : a:gr
-  if a:0
-    call s:show_all_dos(group, a:1, 0, '')
-  else
-    call s:show_all_dos(group, 0, 0, '')
-  endif
-endfun
+" @param group: the requested group or mapping prefix
+" @param ...: (BANG) show the file where the mapping has been set, if 1
+""=============================================================================
+""
+fun! do#show_all_dos(group, ...)
+  " Global mappings.{{{1
+  call s:init_highlight()
+  let group = empty(a:group) ? g:vimdo_default_prefix : a:group
+  call s:show_all_dos(group, a:0 ? a:1 : 0, 0, '')
+endfun "}}}
 
-fun! do#show_buffer_dos(gr, ...)
-  call s:init()
-  let group = empty(a:gr) ? g:vimdo_default_prefix : a:gr
-  if a:0
-    call s:show_all_dos(group, a:1, 1, '')
-  else
-    call s:show_all_dos(group, 0, 1, '')
-  endif
-endfun
+fun! do#show_buffer_dos(group, ...)
+  " Buffer mappings.{{{1
+  call s:init_highlight()
+  let group = empty(a:group) ? g:vimdo_default_prefix : a:group
+  call s:show_all_dos(group, a:0 ? a:1 : 0, 1, '')
+endfun "}}}
 
-"------------------------------------------------------------------------------
 
+
+""=============================================================================
+" Function: s:show_all_dos
+" Main function for the ShowDos command
+"
+" @param group: the requested group or mapping prefix
+" @param show_file: show the file where the mapping has been set
+" @param buffer: only show buffer mappings if 1
+" @param filter: the applied filter, when redrawing
+""=============================================================================
+""
 fun! s:show_all_dos(group, show_file, buffer, filter)
+  " Main function. {{{1
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
   endif
@@ -36,7 +47,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   let pat = match(pre, '<') == 0 ? pre :
         \ s:winOS ? substitute(pre, '\', '\\\\', '') : fnameescape(pre)
 
-  let sep         = s:repeat_char('-')
+  let sep         = repeat('-', &columns - 10)
   let lab         = has_key(group, 'label') ?  pre."\t\t".group.label : pre
   let mode        = mode() == 'n' ? 'n' : 'x'
   let show_file   = a:show_file ? 1 : get(g:, 'vimdo_show_filename', 0)
@@ -174,11 +185,31 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   else
     call s:loop(a:group, a:show_file, a:buffer)
   endif
-endfun
+endfun "}}}
 
-"------------------------------------------------------------------------------
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Section: Helpers
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let s:winOS = has('win32') || has('win16') || has('win64')
+
+fun! s:init_highlight()
+  " Set vimdoDesc highlight group. {{{1
+  let s:current = ''
+  if &background == 'light'
+    hi link vimdoDesc String
+  else
+    hi vimdoDesc ctermfg=251 ctermbg=NONE guifg=#c9c6c9
+          \ guibg=NONE guisp=NONE cterm=NONE,italic gui=NONE,italic
+  endif
+endfun "}}}
 
 fun! s:loop(group, show_file, buffer)
+  " Get character from user, use it as filter or redraw/exit. {{{1
+  " Same parameters as for the main command.
   if !( s:compact || s:simple )
     echo 'Press a key to filter the list, <C-L> to reset, or <ESC> to exit'
   endif
@@ -192,11 +223,11 @@ fun! s:loop(group, show_file, buffer)
     redraw!
     call s:show_all_dos(a:group, a:show_file, a:buffer, nr2char(c))
   endif
-endfun
-
-"------------------------------------------------------------------------------
+endfun "}}}
 
 fun! s:interactive(group, show_file, buffer)
+  " Interactive mode: try to run a command for the matching entered key. "{{{1
+  " Same parameters as for the main command.
   if !( s:compact || s:simple )
     echo 'Press a key to filter the list, <C-L> to reset, or <ESC> to exit'
     echo "Current choice:" s:current
@@ -216,43 +247,23 @@ fun! s:interactive(group, show_file, buffer)
     let s:current .= nr2char(c)
     call s:show_all_dos(a:group, a:show_file, a:buffer, '')
   endif
-endfun
+endfun "}}}
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Section: Helpers                                                         {{{1
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-fun! s:init()
-  let s:current = ''
-  if &background == 'light'
-    hi link vimdoDesc String
-  else
-    hi vimdoDesc ctermfg=251 ctermbg=NONE guifg=#c9c6c9
-          \ guibg=NONE guisp=NONE cterm=NONE,italic gui=NONE,italic
-  endif
-endfun
-
-fun! s:pad(t, n)
+fun! s:pad(s, n)
+  " Pad a string 's' to a max of 'n' characters. {{{1
   if a:n <= 0
     return ''
-  elseif len(a:t) > a:n
-    return a:t[:a:n]."…"
+  elseif len(a:s) > a:n
+    return a:s[:a:n]."…"
   else
-    let spaces = a:n - len(a:t)
+    let spaces = a:n - len(a:s)
     let spaces = printf("%".spaces."s", "")
-    return a:t.spaces
+    return a:s.spaces
   endif
-endfun
-
-fun! s:repeat_char(c)
-  let s = ''
-  for i in range(&columns - 10)
-    let s .= a:c
-  endfor
-  return s
-endfun
+endfun "}}}
 
 fun! s:get_file(map, mode)
+  " Get file where the mapping is defined. {{{1
   redir => m
   exe "silent! verbose ".a:mode."map ".a:map
   redir END
@@ -264,15 +275,32 @@ fun! s:get_file(map, mode)
     endif
   endfor
   return fnamemodify(m, ':t')
-endfun
+endfun "}}}
 
 fun! s:get_maps(group)
+  " Get actual mappings for the requested group. {{{1
+  "
+  " Since the mappings descriptions reside in the same dictionary as the group
+  " options, the latter must be removed.
+  "
+  " @param group: the requested group or mapping prefix
+  " Returns: the group dictionary, without the options, only the mappings
+
   let remove = ['require_description', 'label', 'arbitrary', 'interactive',
         \       'compact', 'keys_width', 'desc_width', 'simple', 'show_rhs']
   return filter(keys(a:group), 'index(remove, v:val) < 0')
-endfun
+endfun "}}}
 
 fun! s:sort_dos(dos, group)
+  " Sort the mappings. {{{1
+  "
+  " The order can be arbitrary if the group has an 'order' key, otherwise it's
+  " alphanumeric.
+  "
+  " @param dos: the mappings
+  " @param group: the requested group or mapping prefix
+  " Returns: the sorted mappings
+
   if !empty(s:current) || !has_key(a:group, 'order')
     return sort(keys(a:dos), 'i')
   else
@@ -285,9 +313,20 @@ fun! s:sort_dos(dos, group)
     endfor
     return order
   endif
-endfun
+endfun "}}}
 
 fun! s:get_do(group, do, mode)
+  " Get mapping from group. {{{1
+  "
+  " If it's an arbitrary group, the mapping must be defined in the group,
+  " otherwise nothing will be returned. If it's a normal mapping prefix, use
+  " maparg() to see if the mapping exists.
+  "
+  " @param group: the requested group or mapping prefix
+  " @param do: the requested mapping
+  " @param mode: the mode (only normal mode seems to be supported right now...)
+  " Returns: a dict like the one returnad by maparg()
+
   if !has_key(a:group, a:do)
     " not a custom dictionary, check for a mapped key
     return maparg(a:do, a:mode, 0, 1)
@@ -307,19 +346,24 @@ fun! s:get_do(group, do, mode)
     return {'noremap': a:group[a:do][1], 'lhs': a:do, 'rhs': a:group[a:do][2],
           \ 'buffer': 0, 'custom': 1, 'description': a:group[a:do][0]}
   endif
-endfun
+endfun "}}}
 
 fun! s:get_rhs(d)
+  " Convert some special keys for visualization. {{{1
+  " @param d: the map dictionary
+  " Returns: the converted mapping
+
   let r = substitute(a:d.rhs, "\<cr>", '<cr>', 'g')
   let r = substitute(r, "\<space>", '<space>', 'g')
   let r = substitute(r, "\<bar>", '<bar>', 'g')
   return r
-endfun
+endfun "}}}
 
 fun! do#msg(m, ...)
+  " A message. Without arg, it's a warning. {{{1
   if a:0   | echohl Special     | echo a:m
   else     | echohl WarningMsg  | echom a:m | endif
   echohl None
-endfun
+endfun "}}}
 
-
+" vim: et sw=2 ts=2 sts=2 fdm=marker

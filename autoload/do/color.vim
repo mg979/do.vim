@@ -1,7 +1,7 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 fun! do#color#echo()
-  """Get the word under cursor and show color informations, if possible."""
+  " Get the word under cursor and show color informations, if possible. "{{{1
   let c = s:get_color()
   if c == ''
     return
@@ -21,24 +21,25 @@ fun! do#color#echo()
     echo "Unknown color"
   endif
   silent! call repeat#set(":\<c-u>call do#color#echo()\<cr>", 1)
-endfun
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+endfun "}}}
 
 fun! s:get_color()
+  " Try to extract a color code/number/name from the current WORD. "{{{1
   let c = tolower(expand('<cWORD>'))
+  let c = substitute(c, 'gui[fb]g=', '', '') 
+  let c = substitute(c, 'cterm[fb]g=', '', '') 
   return substitute(c, '[^#a-zA-Z0-9]', '', 'g')
-endfun
+endfun "}}}
 
 fun! s:is_color(c)
+  " Check if the string is a hexadecimal color code. "{{{1
   return strlen(a:c) == 7 && match(a:c, '#') == 0
-endfun
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+endfun "}}}
 
 fun! s:approx(c)
-  """Try to use vim-colortemplate to approximate the color."""
+  " Try to use vim-colortemplate to approximate the color. "{{{1
   try
+    silent! packadd vim-colortemplate
     let s = colortemplate#colorspace#approx(a:c)
     let i = s.index
     let d = s.delta
@@ -47,7 +48,9 @@ fun! s:approx(c)
     echo 'Colortemplate plugin is needed'
     return ''
   endtry
-endfun
+endfun "}}}
+
+" COLOR TABLES "{{{1
 
 let s:xterm_colors = {
       \ '0':   '#000000', '1':   '#800000', '2':   '#008000', '3':   '#808000', '4':   '#000080',
@@ -552,4 +555,6 @@ let s:color_names = {
       \'salmon2':                '#ee8262',     'salmon3':                '#cd7054',
       \'salmon4':                '#8b4c39',
       \}
+"}}}
 
+" vim: et sw=2 ts=2 sts=2 fdm=marker

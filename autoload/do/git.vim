@@ -1,16 +1,24 @@
-"------------------------------------------------------------------------------
-
-fun! do#git#blame_line(cmline, ...)
+""=============================================================================
+" Function: do#git#blame_line
+" Perform git blame on a specific buffer line, and outputs the result to
+" a buffer or the command line.
+"
+" @param cmdline: output to the command line if 1, to buffer if 0
+" @param ...: optional format for git blame command
+""=============================================================================
+""
+fun! do#git#blame_line(cmdline, ...)
+  "{{{1
   if !executable('awk')
     return do#msg('awk executable is needed')
   endif
   let file = expand("%")
   let line = line('.').",".line('.')
-  let short = a:cmline ? '-s --abbrev-commit ' : ''
+  let short = a:cmdline ? '-s --abbrev-commit ' : ''
   let format = a:0 ? a:1 : short
   let str = system("git show " . format . "$(git blame " .
         \ file . " -L " . line . " | awk '{print $1}')")
-  if a:cmline || v:shell_error
+  if a:cmdline || v:shell_error
     call s:echo_blame(str)
   else
     let line = '\V'.escape(getline('.'), '\')
@@ -26,11 +34,10 @@ fun! do#git#blame_line(cmline, ...)
     call matchadd('Search', line)
     silent! normal! zmnzogg
   endif
-endfun
-
-"------------------------------------------------------------------------------
+endfun "}}}
 
 fun! s:echo_blame(str)
+  "{{{1
   let msg = split(a:str, '\n')
   if match(msg[0], 'fatal') == 0
     echohl ErrorMsg | echo 'fatal'
@@ -47,5 +54,5 @@ fun! s:echo_blame(str)
     echo l
   endfor
   echo ""
-endfun
-
+endfun "}}}
+" vim: et sw=2 ts=2 sts=2 fdm=marker

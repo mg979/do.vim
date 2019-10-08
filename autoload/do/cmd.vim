@@ -1,8 +1,9 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Section: Miscellaneous commands                                          {{{1
+" Section: Miscellaneous commands
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#redir_expression(...)                                         "{{{2
+fun! do#cmd#redir_expression(...)
+  "{{{1
   if a:0 | let var = a:1
   else   | let var = input('RedirExpression > ', '', 'expression') | endif
   call s:redir(var, 1)
@@ -11,13 +12,10 @@ endfun
 fun! do#cmd#redir_cmd(...)
   let cmd = join(a:000, ' ')
   call s:redir(cmd, 0)
-endfun
+endfun "}}}
 
-
-"------------------------------------------------------------------------------
-
-
-fun! do#cmd#profiling()                                                   "{{{2
+fun! do#cmd#profiling()
+  "{{{1
   for b in range(1, bufnr('$'))
     if getbufvar(b, '&modified')
       return do#msg("There are unsaved buffers, aborting.")
@@ -37,24 +35,18 @@ fun! do#cmd#profiling()                                                   "{{{2
     profile pause
     noautocmd qall
   endif
-endfun
+endfun "}}}
 
-
-"------------------------------------------------------------------------------
-
-
-fun! do#cmd#trim_whitespaces()                                            "{{{2
+fun! do#cmd#trim_whitespaces()
+  "{{{1
   let pos = getpos(".")
   keeppatterns silent! %s/\s\+$//e
   call setpos('.', pos)
   call do#msg("Trimmed trailing whitespaces", 1)
-endfun
+endfun "}}}
 
-
-"------------------------------------------------------------------------------
-
-
-fun! do#cmd#copy_file()                                                   "{{{2
+fun! do#cmd#copy_file()
+  "{{{1
   let [ base, ext, n ] = [ expand('%:r'), expand('%:e'), 1 ]
   let go_left = repeat("\<Left>",len(ext)+1)
   let new = base . "_copy"
@@ -63,11 +55,10 @@ fun! do#cmd#copy_file()                                                   "{{{2
     let new = base . "_copy" . n
   endwhile
   call feedkeys(":saveas ". new . "." . ext . go_left, 'n')
-endfun
+endfun "}}}
 
-"------------------------------------------------------------------------------
-
-fun! do#cmd#open_ftplugin(...)                                            "{{{2
+fun! do#cmd#open_ftplugin(...)
+  "{{{1
   let sl = has('win32') ? '\\\\' : "\/"
   let scripts = filter(split(execute('scriptnames'), "\0"),
         \              'v:val =~ "'.sl.'ftplugin'.sl.&ft.'\.vim"')
@@ -118,13 +109,10 @@ fun! do#cmd#open_ftplugin(...)                                            "{{{2
   catch
     call do#msg('No ftplugin file in standard locations')
   endtry
-endfun
+endfun "}}}
 
-
-"------------------------------------------------------------------------------
-
-
-fun! do#cmd#snippets()                                                    "{{{2
+fun! do#cmd#snippets()
+  "{{{1
   if exists('g:did_plugin_ultisnips')
     UltiSnipsEdit
   elseif exists('g:loaded_snips')
@@ -132,12 +120,10 @@ fun! do#cmd#snippets()                                                    "{{{2
   else
     echo "[do.vim] No snippets plugin detected."
   endif
-endfun
+endfun "}}}
 
-"------------------------------------------------------------------------------
-" Reference: https://superuser.com/a/805168
-
-fun! do#cmd#delete_swap()                                                 "{{{2
+fun! do#cmd#delete_swap()
+  "{{{1
   let pat = &directory . '/' . expand('%:t') . '.sw[klmnop]*'
   let swapfiles = glob(pat,0,1)
   let nfiles = len(swapfiles)
@@ -151,11 +137,10 @@ fun! do#cmd#delete_swap()                                                 "{{{2
       endif
     endfor
   endif
-endfun
+endfun "}}}
 
-"------------------------------------------------------------------------------
-
-fun! do#cmd#update_tags()                                                 "{{{2
+fun! do#cmd#update_tags()
+  "{{{1
   if filereadable('./tags')
         \ || confirm('tags not found. Generate?', "&Yes\n&No", 2) == 1
     let f = './tags'
@@ -170,13 +155,10 @@ fun! do#cmd#update_tags()                                                 "{{{2
   else
     call do#msg(error)
   endif
-endfun
+endfun "}}}
 
-
-"------------------------------------------------------------------------------
-
-
-fun! do#cmd#find_crlf(bang, dir)                                          "{{{2
+fun! do#cmd#find_crlf(bang, dir)
+  "{{{1
   if has('win32') || has('win16') || has('win64')
     return do#msg('Not available on a Windows OS')
   endif
@@ -205,13 +187,10 @@ fun! do#cmd#find_crlf(bang, dir)                                          "{{{2
   endif
   copen
   cfirst
-endfun
+endfun "}}}
 
-
-"------------------------------------------------------------------------------
-
-
-fun! do#cmd#syntax_attr()                                                 "{{{2
+fun! do#cmd#syntax_attr()
+  "{{{1
   """Edited from Gary Holloway version:
   """https://www.vim.org/scripts/script.php?script_id=383
 
@@ -285,22 +264,21 @@ fun! do#cmd#syntax_attr()                                                 "{{{2
   endif
   echohl None
   silent! call repeat#set(":\<c-u>call do#cmd#syntax_attr()\<cr>", 1)
-endfun
-
+endfun "}}}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Section: Helpers                                                         {{{1
+" Section: Helpers
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! s:store_reg()
+fun! s:store_reg() "{{{1
   let s:oldreg = [getreg("\""), getregtype("\"")]
 endfun
 
-fun! s:restore_reg()
+fun! s:restore_reg() "{{{1
   call setreg("\"", s:oldreg[0], s:oldreg[1])
 endfun
 
-fun! s:redir(input, is_var)
+fun! s:redir(input, is_var) "{{{1
   if empty(a:input) | return do#msg('Canceled.') | endif
   call s:store_reg()
   redir @"
@@ -317,5 +295,6 @@ fun! s:redir(input, is_var)
   call s:restore_reg()
   nnoremap <buffer><nowait><silent> q :quit<cr>:redraw!<cr>
   call do#msg("q: close buffer", 1)
-endfun
+endfun "}}}
 
+" vim: et sw=2 ts=2 sts=2 fdm=marker
