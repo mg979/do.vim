@@ -64,8 +64,8 @@ let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
       \}, get(g:vimdo, g:vimdo_default_prefix, {}))
 
 if g:vimdo_default_prefix == 'do'
-  nnoremap dO  :call do#show_all_dos('do')<cr>
-  nnoremap doB :call do#show_buffer_dos('do')<cr>
+  nnoremap dO  :ShowDos<cr>
+  nnoremap doB :ShowDos!<cr>
 endif
 
 command! -nargs=? -bang ShowDos call do#show_all_dos(<q-args>, <bang>0)

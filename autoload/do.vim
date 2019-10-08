@@ -7,36 +7,26 @@
 " Show mappings that belong to the group, with description if it has been set
 
 " @param group: the requested group or mapping prefix
-" @param ...: (BANG) show the file where the mapping has been set, if 1
+" @param ...: (BANG) show buffer mappings if given
 ""=============================================================================
 ""
 fun! do#show_all_dos(group, ...)
-  " Global mappings.{{{1
+  " Entry point for ShowDos command. {{{1
   call s:init_highlight()
   let group = empty(a:group) ? g:vimdo_default_prefix : a:group
-  call s:show_all_dos(group, a:0 ? a:1 : 0, 0, '')
+  call s:show_all_dos(group, a:0 ? a:1 : 0, '')
 endfun "}}}
-
-fun! do#show_buffer_dos(group, ...)
-  " Buffer mappings.{{{1
-  call s:init_highlight()
-  let group = empty(a:group) ? g:vimdo_default_prefix : a:group
-  call s:show_all_dos(group, a:0 ? a:1 : 0, 1, '')
-endfun "}}}
-
-
 
 ""=============================================================================
 " Function: s:show_all_dos
 " Main function for the ShowDos command
 "
 " @param group: the requested group or mapping prefix
-" @param show_file: show the file where the mapping has been set
 " @param buffer: only show buffer mappings if 1
 " @param filter: the applied filter, when redrawing
 ""=============================================================================
 ""
-fun! s:show_all_dos(group, show_file, buffer, filter)
+fun! s:show_all_dos(group, buffer, filter)
   " Main function. {{{1
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
@@ -50,7 +40,7 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   let sep         = repeat('-', &columns - 10)
   let lab         = has_key(group, 'label') ?  pre."\t\t".group.label : pre
   let mode        = mode() == 'n' ? 'n' : 'x'
-  let show_file   = a:show_file ? 1 : get(g:, 'vimdo_show_filename', 0)
+  let show_file   = get(g:, 'vimdo_show_filename', 0)
   let with_filter = !empty(a:filter)
 
   " group dictionary options
@@ -93,6 +83,15 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   " no results
   if empty(dos) | return do#msg("No do's") | endif
 
+  " at this point, 'dos' is a list with all mappings that start with 'pre'
+  " we must iterate this list and build the lines to show, but first we must
+  " filter out some unwanted mappings:
+  "
+  " 1. we're filtering? exclude those that don't start with the filter
+  " 2. interactive mode? similarly
+  " 3. remove vimdo's own command
+  " 4. also remove the prefix itself, if it's mapped to <NOP>
+
   let D = {}
   for do in dos
     let d = s:get_do(group, do, mode)
@@ -100,7 +99,9 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
     if (a:buffer && !d.buffer) ||
           \ with_filter && match(d.lhs, '\C^'.pat.a:filter) != 0 ||
           \ interactive && match(d.lhs, '\C^'.pat.s:current) != 0 ||
-          \ match(d.rhs, '^:call do#show_') == 0
+          \ match(d.rhs, '^:call do#show_') == 0 ||
+          \ match(d.rhs, '^:ShowDos') == 0 ||
+          \ ( pre ==# do && d.rhs ==? '<NOP>' )
       continue
     endif
 
@@ -181,9 +182,9 @@ fun! s:show_all_dos(group, show_file, buffer, filter)
   echohl None
 
   if interactive
-    call s:interactive(a:group, a:show_file, a:buffer)
+    call s:interactive(a:group, a:buffer)
   else
-    call s:loop(a:group, a:show_file, a:buffer)
+    call s:loop(a:group, a:buffer)
   endif
 endfun "}}}
 
@@ -207,7 +208,7 @@ fun! s:init_highlight()
   endif
 endfun "}}}
 
-fun! s:loop(group, show_file, buffer)
+fun! s:loop(group, buffer)
   " Get character from user, use it as filter or redraw/exit. {{{1
   " Same parameters as for the main command.
   if !( s:compact || s:simple )
@@ -218,14 +219,14 @@ fun! s:loop(group, show_file, buffer)
     call feedkeys("\<cr>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:show_file, a:buffer, '')
+    call s:show_all_dos(a:group, a:buffer, '')
   else
     redraw!
-    call s:show_all_dos(a:group, a:show_file, a:buffer, nr2char(c))
+    call s:show_all_dos(a:group, a:buffer, nr2char(c))
   endif
 endfun "}}}
 
-fun! s:interactive(group, show_file, buffer)
+fun! s:interactive(group, buffer)
   " Interactive mode: try to run a command for the matching entered key. "{{{1
   " Same parameters as for the main command.
   if !( s:compact || s:simple )
@@ -241,11 +242,11 @@ fun! s:interactive(group, show_file, buffer)
     call feedkeys("\<cr>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:show_file, a:buffer, '')
+    call s:show_all_dos(a:group, a:buffer, '')
   else
     redraw!
     let s:current .= nr2char(c)
-    call s:show_all_dos(a:group, a:show_file, a:buffer, '')
+    call s:show_all_dos(a:group, a:buffer, '')
   endif
 endfun "}}}
 

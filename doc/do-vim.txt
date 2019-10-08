@@ -63,8 +63,7 @@ You can call it from the command line:
 >
     :ShowDos {prefix}
 
-With a <bang>, it will also show filenames, even if `g:vimdo_show_filename` is
-false:
+With a <bang>, it will show buffer mappings for {prefix}:
 >
     :ShowDos! {prefix}
 
@@ -159,7 +158,7 @@ An example of creating a new group:
     \'A':  'add all and amend',
     \}
 
-  nnoremap \gO :call do#show_all_dos('\g')<cr>
+  nnoremap \gO :ShowDos \g<cr>
 
 What happens here?
 
