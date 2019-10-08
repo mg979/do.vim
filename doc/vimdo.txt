@@ -1,0 +1,320 @@
+*vimdo.txt*    vimdo     Version 0.1.0    Last change: October 11 2018
+
+
+DO.VIM - TABLE OF CONTENTS                                    *do.vim* *vimdo*
+==============================================================================
+
+  Introduction                                        |vimdo-introduction|
+  Quick start                                         |vimdo-quick-start|
+  Options                                             |vimdo-options|
+  Groups                                              |vimdo-groups|
+  Interactive mode                                    |vimdo-interactive-mode|
+  Group dictionary                                    |vimdo-group-dictionary|
+  Advanced usage                                      |vimdo-advanced-usage|
+  Default commands                                    |vimdo-default-commands|
+
+
+
+
+INTRODUCTION                                              *vimdo-introduction*
+==============================================================================
+
+The concept is to have a group of commands that `do something`, in a way that
+it makes it easy to remember their mappings, and that you can show by running
+a command.
+
+There is a default prefix (`do`) with a set of commands that you can activate,
+but it will work with any of your mappings.
+
+What's the difference between this and just typing `:nmap ...`?
+
+- you can set descriptions for each mapping, and the output is more readable.
+- you can filter entries by pressing a key.
+- it can show the files where mappings are defined.
+- it can be run in interactive mode.
+
+
+
+
+QUICK START                                                *vimdo-quick-start*
+==============================================================================
+
+Use the main command to show all mappings that start with a prefix:
+>
+  :ShowDos g
+<
+you don't need any customization for this. But if you want to add some
+description to your custom mappings?
+
+Say you have a bunch of mappngs that start with `g`, and you want to add some
+description, so that it will show up when you run the command above.
+You create a group for `g`, and you write the descriptions inside:
+>
+  let g:vimdo = {}
+  let g:vimdo.g = {}
+  let g:vimdo.g.cc = 'comment line toggle'
+  let g:vimdo.g.ot = 'open terminal at current file position'
+
+Where the keys inside the `g` group are the mappings `gcc`, `got`, etc.
+
+If some of these mappings are <buffer> mappings (for example you defined them
+in a |ftplugin|), you can call the command with a <bang>, and it will only
+show <buffer> mappings:
+>
+    :ShowDos! g
+
+That's it for a basic usage.
+
+
+
+
+OPTIONS                                                        *vimdo-options*
+==============================================================================
+
+To show the file where the mapping is defined:
+>
+  let g:vimdo_show_filename = 1
+
+To always run in interactive mode (see |vimdo-interactive|):
+>
+  let g:vimdo_interactive = 1
+
+If you want the default commands:
+>
+  let g:vimdo_use_default_commands = 1
+
+If you to change the default prefix (`do`) for them:
+>
+  let g:vimdo_default_prefix = 'do'
+
+To read more about the default commands, see |vimdo-default-commands|.
+To create new groups, see |vimdo-groups|.
+
+
+
+GROUPS                                                          *vimdo-groups*
+==============================================================================
+
+An example of creating a new group with fugitive.vim commands:
+>
+  nnoremap \gr  :echo system("git reset")<cr>
+  nnoremap \gs  :Gstatus<cr>
+  nnoremap \gp  :redraw! <bar> echo "Pushing...\t" <bar> echon system("git push")<cr>
+  nnoremap \ga  :echo system("git add -u")."Git: staged all tracked files"<cr>
+  nnoremap \gl  :0Glog<cr>
+  nnoremap \gd  :Gvdiff<Space>
+  nnoremap \gC  :Gcommit --amend<cr>
+  nnoremap \gA  :call system("git add -u")<cr>:Gcommit --amend<cr>
+	nnoremap \gbl :call do#git#blame_line(1)<cr>
+	nnoremap \gbL :call do#git#blame_line(0)<cr>
+
+  let g:vimdo = {}
+  let g:vimdo['\g'] = { 'label' : 'git commands', 'require_description': 1,
+    \'r':  'reset',
+    \'s':  'status',
+    \'p':  'push',
+    \'a':  'stage all tracked files',
+    \'l':  'log for current file',
+    \'d':  'diff',
+    \'C':  'amend commit',
+    \'A':  'stage all tracked files and amend',
+		\'bl': 'blame current line (cmdline)',
+		\'bL': 'blame current line (buffer)',
+    \}
+
+  nnoremap \g? :ShowDos \g<cr>
+
+What happens here?
+
+- you assign your mappings, as you normally would.
+- you initialize the `g:vimdo` dict (if you didn't already!)
+- you create a key inside of it, that is the mapping prefix you are using.
+- you populate this key with the continuation of each mapping, and set a description.
+- finally you create a mapping to show your group.
+
+You can see a couple of `group options`:
+
+- `label` is a label that will be shown when running the command
+- `require_description` means that mappings that don't have a description
+  won't be listed when running the command.
+
+You can read more about group options in |vimdo-group|.
+
+
+
+
+INTERACTIVE MODE                                           *vimdo-interactive*
+==============================================================================
+
+The command can be run in interactive mode if the global option is set, or if
+a custom group contains the 'interactive' dictionary key.
+
+In this case, the pressed keys will not only refilter the list, but also
+trigger the mapping if a match in the list is found.
+
+
+
+
+GROUP DICTIONARY                                                 *vimdo-group*
+==============================================================================
+
+In the created dictionary, there can be these optional keys:
+
+- `label`
+- `simple`
+- `interactive`
+- `require_description`
+- `arbitrary`
+                                                                 *vimdo-label*
+`label`: just a label for the header.
+                                                                *vimdo-simple*
+`simple`: no separators, no 'Press key...' message.
+
+`interactive`: run in interactive mode.
+                                                   *vimdo-require_description*
+`require_description`: that is, a dict key/value pair. May be convenient
+    because, in reality, you don't need to create a dictionary at all, just
+    execute:
+>
+    :ShowDos {prefix}
+<
+    and all mappings that begin with that prefix will be shown. Setting
+    `require_description` prevents unwanted mappings to be shown in the list,
+    but forces you to add dictionary entries for all items.
+
+                                                             *vimdo-arbitrary*
+`arbitrary`: if true, the group name is not the prefix, is just a group name.
+    The whole keys will be checked for a mapping, but only those ones.
+    This allows you to show a set of mapping of your choosing, from the ground
+    up. Pointless to use `require_description` with this one.
+    For example, you could use arbitrary groups in your |ftplugin| files, to
+    show mappings that you define there.
+
+
+
+ADVANCED USAGE                                                *vimdo-advanced*
+==============================================================================
+
+Used to define the padding of mappings/descriptions
+>
+  let g:vimdo_keys_width = 16
+  let g:vimdo_desc_width = 40
+
+More optional group dictionary keys:
+
+- `compact`
+- `order`
+- `keys_width`
+- `desc_width`
+- `show_rhs`
+                                                               *vimdo-compact*
+`compact`: lets you show a group in a compact way, on multiple columns, without
+    showing the {rhs} of the mapping, only the trigger and the description.
+    Note: if `compact` is set, `require_description` is also considered true.
+
+                                                                 *vimdo-order*
+`order`: since dictionaries don't preserve order, this key can hold the order
+    in which you want the group to be shown. All group mappings must be
+    present in this list, or it will fail.
+
+                                                                *vimdo-widths*
+`keys_width` and `desc_width`: especially useful to set for a group, when
+    using compact mode.
+
+                                                              *vimdo-show_rhs*
+`show_rhs`: if present and set to 0, will prevent the rhs of the mappings from
+		being displayed.
+
+Finally, you can define a command in the group dictionary, without having
+defined a mapping for it. This allows the creation of totally arbitrary
+groups. To do this, the dictionary element must contain:
+>
+    {key} : [ {description}, {noremap}, {rhs} ]
+
+Note: with this system, you can also create contextual menus that execute
+custom commands at keypress!
+
+Note: this kind of menu requires `arbitrary` to be set in the group.
+
+Note: when writing the {rhs} of the custom command, if any special character
+is present, the {rhs} must use `double quotes` and the special characters must
+be escaped. Only the following ones are accepted:
+
+    <cr>      -> `"\<cr>"`
+    <space>   -> `"\<space>"`
+    <bar>     -> `"\<bar>"`
+
+
+
+DEFAULT COMMANDS                                      *vimdo-default-commands*
+==============================================================================
+
+If you activated the default commands and didn't change the default prefix,
+these mappings are set:
+>
+    dO    ( show all do's )
+    doB   ( show all buffer do's )
+
+If NOT using the default prefix, these mappings will be:
+>
+    {prefix}?   ( show all do's )
+    {prefix}!   ( show all buffer do's )
+
+These are the default commands:
+
+`dodo`  ->  do diff other file (in next window)
+`dods`  ->  do diff with saved
+`dodl`  ->  do diff with last git revision
+`dodh`  ->  do diff with HEAD
+`dorc`  ->  do redir command (command output to new buffer)
+`dore`  ->  do redir expression (expression to new buffer)
+`dows`  ->  do trim whitespaces
+`doec`  ->  do echo color infos
+`dosn`  ->  do open snippets file for the current filetype
+`doft`  ->  do open ftplugin file (custom preferred)
+`dofT`  ->  do open ftplugin file (stock vim/nvim only)
+`dout`  ->  do update tags (runs `ctags -R .`, or `b:ctags_cmd` if defined)
+`dovp`  ->  do vim profiling (first time activates, second time stops and quits)
+`dossa` ->  do print syntax infos for word under cursor
+`dofcr` ->  do find CR (find/correct files with CRLF line endings)
+
+If you don't want all defaults, but want some of them, add them to your `vimrc`:
+>
+  nnoremap dows  :call do#cmd#trim_whitespaces()<cr>
+  nnoremap dout  :call do#cmd#update_tags()<cr>
+  nnoremap dovp  :call do#cmd#profiling()<cr>
+  nnoremap dodo  :call do#diff#other()<cr>
+  nnoremap dods  :call do#diff#saved()<cr>
+  nnoremap dodl  :call do#diff#last_revision(0)<cr>
+  nnoremap dodh  :call do#diff#last_revision(1)<cr>
+  nnoremap dossa :call do#cmd#syntax_attr()<cr>
+  nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
+  nnoremap dore  :call do#cmd#redir_expression()<cr>
+  nnoremap doec  :call do#color#echo()<cr>
+  nnoremap doft  :call do#cmd#open_ftplugin()<cr>
+  nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>
+  nnoremap dosn  :call do#cmd#snippets()<cr>
+  nnoremap dorc  :RedirCommand<space>
+  command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
+
+To extend default group with some other commands (example):
+>
+  nnoremap dorf   m`gg=G``
+  nnoremap doca   :%y+<cr>
+  nnoremap dosa   ggVG
+  nnoremap dojpp  :%!python -m json.tool<cr>
+  nnoremap dotm   :setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>
+
+  let g:vimdo = {'do':
+    \'rf':  'reindent file',
+    \'ca':  'copy all',
+    \'sa':  'select all',
+    \'jpp': 'json pretty print',
+    \'tm':  'table mode',
+    \}
+
+
+
+
+==============================================================================
+vim:tw=78:sw=2:ts=2:ft=help:norl:nowrap:

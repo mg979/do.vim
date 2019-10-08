@@ -12,6 +12,10 @@
 ""
 fun! do#show_all_dos(group, ...)
   " Entry point for ShowDos command. {{{1
+  if empty(a:group) && !exists('g:vimdo_default_prefix')
+    echo '[do.vim] you must enter a mapping prefix'
+    return
+  endif
   call s:init_highlight()
   let group = empty(a:group) ? g:vimdo_default_prefix : a:group
   call s:show_all_dos(group, a:0 ? a:1 : 0, '')
