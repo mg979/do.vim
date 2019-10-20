@@ -268,6 +268,7 @@ These are the default commands:
 `dodh`  ->  do diff with HEAD
 `dorc`  ->  do redir command (command output to new buffer)
 `dore`  ->  do redir expression (expression to new buffer)
+`dorf`  ->  do reindent file (without altering jump list or view position)
 `dows`  ->  do trim whitespaces
 `doec`  ->  do echo color infos
 `dosn`  ->  do open snippets file for the current filetype
@@ -290,6 +291,7 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dossa :call do#cmd#syntax_attr()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
   nnoremap dore  :call do#cmd#redir_expression()<cr>
+  nnoremap dorf  :call do#cmd#reindent_file()<cr>
   nnoremap doec  :call do#color#echo()<cr>
   nnoremap doft  :call do#cmd#open_ftplugin()<cr>
   nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>

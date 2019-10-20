@@ -45,6 +45,13 @@ fun! do#cmd#trim_whitespaces()
   call do#msg("Trimmed trailing whitespaces", 1)
 endfun "}}}
 
+fun! do#cmd#reindent_file()
+  " {{{1
+  let view = winsaveview()
+  keepjumps normal! gg=G
+  call winrestview(view)
+endfun "}}}
+
 fun! do#cmd#copy_file()
   "{{{1
   let [ base, ext, n ] = [ expand('%:r'), expand('%:e'), 1 ]

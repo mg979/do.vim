@@ -36,6 +36,7 @@ if get(g:, 'vimdo_use_default_commands', 0)
   exe 'nnoremap <silent> '.s:p.'fcr :call do#cmd#find_crlf(1, "")<cr>'
   exe 'nnoremap <silent> '.s:p.'ft  :call do#cmd#open_ftplugin()<cr>'
   exe 'nnoremap <silent> '.s:p.'re  :call do#cmd#redir_expression()<cr>'
+  exe 'nnoremap <silent> '.s:p.'rf  :call do#cmd#reindent_file()<cr>'
   exe 'nnoremap <silent> '.s:p.'sn  :call do#cmd#snippets()<cr>'
   exe 'nnoremap <silent> '.s:p.'ssa :call do#cmd#syntax_attr()<cr>'
   exe 'nnoremap <silent> '.s:p.'sw  :call do#cmd#delete_swap()<cr>'
@@ -69,6 +70,7 @@ if get(g:, 'vimdo_use_default_commands', 0)
         \ 'ft':  'ftplugin file',
         \ 'rc':  'redir command',
         \ 're':  'redir expression',
+        \ 'rf':  'reindent file',
         \ 'sn':  'open snippets file',
         \ 'ssa': 'show syntax attributes',
         \ 'ut':  'update tags',
