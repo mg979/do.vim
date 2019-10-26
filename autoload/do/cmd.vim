@@ -66,9 +66,10 @@ endfun "}}}
 
 fun! do#cmd#open_ftplugin(...)
   "{{{1
-  let sl = has('win32') ? '\\\\' : "\/"
-  let scripts = filter(split(execute('scriptnames'), "\0"),
-        \              'v:val =~ "'.sl.'ftplugin'.sl.&ft.'\.vim"')
+  let sl = has('win32') ? '\\' : '/'
+  let scripts = filter(split(execute('scriptnames'), "\n"),
+        \              'v:val =~ '''.sl.'ftplugin'.sl.&ft.'\.vim''')
+  call map(scripts, 'substitute(v:val, ''^\s*\d\+:\s\+'', "", "")')
   let pat = has('win32') ?
         \     has('nvim') ? '\\share\\nvim' : escape($VIM, '\')
         \   : has('nvim') ? '\/share\/nvim' : 'vim\/vim\d\d'
@@ -78,14 +79,14 @@ fun! do#cmd#open_ftplugin(...)
     call extend(scripts, default)
   else
     let valid = has('win32') ?
-          \ [('~\vimfiles\after'), ('~\vimfiles\ftplugin')] :
-          \ [('~/.vim/after'), ('~/.vim/ftplugin')]
+          \ ['~\vimfiles\after', '~\vimfiles\ftplugin'] :
+          \ ['~/.vim/after',     '~/.vim/ftplugin']
     call map(valid, 'resolve(fnamemodify(v:val, ":p"))')
     call map(scripts, 'resolve(fnamemodify(v:val, ":p"))')
     let ok = []
     for path in valid
       for script in scripts
-        if script =~ path
+        if stridx(script, path) != -1
           call add(ok, script)
         endif
       endfor
