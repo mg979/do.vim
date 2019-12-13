@@ -136,12 +136,16 @@ fun! do#cmd#delete_swap()
   let swapfiles = glob(pat,0,1)
   let nfiles = len(swapfiles)
   let question = printf('Delete %s (%s file%s)?', pat, nfiles, nfiles>1?'s':'')
-  if nfiles && confirm(question, "&Yes\n&No") == 1
+  let answer = confirm(question, "&Yes\n&Ask\n&No")
+  if nfiles && (answer == 1 || answer == 2)
     for sf in swapfiles
-      if delete(sf)
-        echo 'Deleted' sf
-      else
-        echoerr 'Failed to delete' sf . '!'
+      let can_delete = answer == 1 || confirm('Delete '.sf.'?', "&Yes\n&No") == 1
+      if can_delete
+        if delete(sf)
+          echo 'Deleted' sf
+        else
+          echoerr 'Failed to delete' sf . '!'
+        endif
       endif
     endfor
   endif
