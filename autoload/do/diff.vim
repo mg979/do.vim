@@ -29,7 +29,7 @@ fun! do#diff#saved()
   let [ f, ft ] = [ fnameescape(resolve(expand("%:p"))), &ft ]
   exe (tabpagenr()-1)."tabedit" f
   diffthis
-  vnew | exe "0r" f
+  vnew | exe "r" f | 1d _
   exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . ft
   setlocal statusline=%#Search#\ Saved\ file
   diffthis
