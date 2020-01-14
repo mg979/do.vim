@@ -173,8 +173,8 @@ endfun "}}}
 
 fun! do#cmd#find_crlf(bang, dir)
   "{{{1
-  if has('win32') || has('win16') || has('win64')
-    return do#msg('Not available on a Windows OS')
+  if has('win32') && (!executable('fd') || !executable('file') || !executable('grep') || !executable('sed'))
+    return do#msg('executables needed: fd, file, grep, sed')
   endif
   let dir = empty(a:dir) ? '.' : a:dir
   if !isdirectory(dir)
@@ -183,12 +183,18 @@ fun! do#cmd#find_crlf(bang, dir)
         \ confirm("This is your home directory!", "&Yes\n&No", 2) != 1
     return
   endif
-  let files = systemlist("file $(find . -type f) | grep 'with CRLF' | sed 's#\./##' | sed 's/:.*//'")
+  if has('win32')
+    let files = map(systemlist('fd . -t f -x file {} | grep "with CRLF" | sed "s#\./##" | sed "s/[:;].*//"'), 'substitute(v:val, "\r", "", "")')
+  elseif executable('fd')
+    let files = systemlist("fd . -t f -x file {} | grep 'with CRLF' | sed 's#\./##' | sed 's/:.*//'")
+  else
+    let files = systemlist("file $(find . -type f) | grep 'with CRLF' | sed 's#\./##' | sed 's/:.*//'")
+  endif
   if empty(files) | return do#msg("No results.") | endif
   let list = []
   for file in files
     call add(list, {'filename': file,
-          \         'text': system("file ".file." | sed 's/.*:/ /'"),
+          \         'text': has('win32') ? file : system("file ".file." | sed 's/.*:/ /'"),
           \         'lnum': 1, 'col':1})
   endfor
   call setqflist(list)
