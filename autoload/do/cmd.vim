@@ -156,7 +156,9 @@ fun! do#cmd#update_tags()
   if filereadable('./tags')
         \ || confirm('tags not found. Generate?', "&Yes\n&No", 2) == 1
     let f = './tags'
-    let cmd = get(b:, 'ctags_cmd', get(g:, 'fzf_tags_command', 'ctags -R'))
+    let cmd = get(b:, 'ctags_cmd',
+          \   get(g:, 'fzf_tags_command',
+          \   executable('ctags-universal') ? 'ctags-universal -R' : 'ctags -R'))
     let error = system(cmd)
   else
     redraw!
