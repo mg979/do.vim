@@ -98,6 +98,7 @@ fun! s:show_all_dos(group, buffer, filter)
 
   let D = {}
   for do in dos
+    if do ==# 'order' | continue | endif  " not a mapping, it's their order
     let d = s:get_do(group, do, mode)
     let custom = has_key(d, 'custom')
     if (a:buffer && !d.buffer) ||
