@@ -26,8 +26,11 @@ endfun
 
 fun! do#diff#saved()
   " Diff with actual saved file.
-  let [ f, ft ] = [ fnameescape(resolve(expand("%:p"))), &ft ]
-  exe (tabpagenr()-1)."tabedit" f
+  let [ f, ft ] = [ fnameescape(resolve(@%)), &ft ]
+  let oldlz = &lz
+  set lazyredraw
+  vsplit
+  exe (tabpagenr())."wincmd T"
   diffthis
   vnew | exe "r" f | 1d _
   exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . ft
@@ -35,6 +38,7 @@ fun! do#diff#saved()
   diffthis
   wincmd x
   redraw!
+  let &lazyredraw = oldlz
 endfun
 
 

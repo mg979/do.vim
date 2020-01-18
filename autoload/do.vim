@@ -221,7 +221,7 @@ fun! s:loop(group, buffer)
   endif
   let c = getchar()
   if c == 27
-    call feedkeys("\<cr>", 'n')
+    call feedkeys("\<Esc>", 'n')
   elseif c == 12
     redraw!
     call s:show_all_dos(a:group, a:buffer, '')
