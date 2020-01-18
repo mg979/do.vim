@@ -26,19 +26,24 @@ endfun
 
 fun! do#diff#saved()
   " Diff with actual saved file.
-  let [ f, ft ] = [ fnameescape(resolve(@%)), &ft ]
-  let oldlz = &lz
-  set lazyredraw
-  vsplit
-  exe (tabpagenr())."wincmd T"
+  if !filereadable(@%) | return do#msg('File is not readable.') | endif
+
+  " current file to new tab
+  let ft = &ft
+  exe (tabpagenr()-1)."tabedit %"
   diffthis
-  vnew | exe "r" f | 1d _
+
+  " new vertical buffer with content read from  disk
+  vsplit | enew | exe "r #" | 1d _
   exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . ft
   setlocal statusline=%#Search#\ Saved\ file
   diffthis
+
+  " set wincolor and autodelete temp buffer if last in tab
+  call s:wincolor()
+  au BufEnter <buffer> if len(tabpagebuflist()) == 1 | bwipeout | endif
   wincmd x
   redraw!
-  let &lazyredraw = oldlz
 endfun
 
 
@@ -69,6 +74,21 @@ fun! s:is_tracked(file)
   " Check if file is tracked in repository.
   call system(fugitive#repo().git_command('ls-files', '--error-unmatch', a:file))
   return !v:shell_error
+endfun
+
+
+fun! s:wincolor()
+  " Set window background color, if supported
+  if &bg == 'dark'
+    hi DoWinColor guibg=#303030 ctermbg=236
+  else
+    hi DoWinColor guibg=#dadada ctermbg=7
+  endif
+  if has('patch-8.1.1391')
+    set wincolor=DoWinColor
+  elseif has('nvim')
+    set winhighlight=Normal:DoWinColor
+  endif
 endfun
 
 
