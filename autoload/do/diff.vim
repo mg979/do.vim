@@ -5,21 +5,20 @@
 
 fun! do#diff#other()
   " Diff with next window in tab.
-  let bufs = tabpagebuflist()
-  if len(bufs) < 2
+  if len(tabpagebuflist()) < 2
     return do#msg("There must be at least 2 buffers in the tab page")
   endif
-  let f1 = fnameescape(resolve(expand("%:p")))
-  wincmd w
-  let f2 = fnameescape(resolve(expand("%:p")))
-  wincmd p
-  if f1 ==# f2
-    return do#msg("Same file")
+  if !&diff
+    diffthis
+    wincmd w
+    diffthis
+    wincmd p
+  else
+    diffoff
+    wincmd w
+    diffoff
+    wincmd p
   endif
-  exe (tabpagenr()-1)."tabedit" f2
-  diffthis
-  exe 'vsplit' f1
-  diffthis
   redraw!
 endfun
 
@@ -41,7 +40,7 @@ fun! do#diff#saved()
 
   " set wincolor and autodelete temp buffer if last in tab
   call s:wincolor()
-  au BufEnter <buffer> if len(tabpagebuflist()) == 1 | bwipeout | endif
+  au BufEnter <buffer> if len(tabpagebuflist()) == 1 | bwipeout | diffoff | endif
   wincmd x
   redraw!
 endfun
