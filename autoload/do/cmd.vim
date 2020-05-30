@@ -2,18 +2,6 @@
 " Section: Miscellaneous commands
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! do#cmd#redir_expression(...)
-  "{{{1
-  if a:0 | let var = a:1
-  else   | let var = input('RedirExpression > ', '', 'expression') | endif
-  call s:redir(var, 1)
-endfun
-
-fun! do#cmd#redir_cmd(...)
-  let cmd = join(a:000, ' ')
-  call s:redir(cmd, 0)
-endfun "}}}
-
 fun! do#cmd#profiling()
   "{{{1
   for b in range(1, bufnr('$'))
@@ -35,14 +23,6 @@ fun! do#cmd#profiling()
     profile pause
     noautocmd qall
   endif
-endfun "}}}
-
-fun! do#cmd#trim_whitespaces()
-  "{{{1
-  let pos = getpos(".")
-  keeppatterns silent! %s/\s\+$//e
-  call setpos('.', pos)
-  call do#msg("Trimmed trailing whitespaces", 1)
 endfun "}}}
 
 fun! do#cmd#reindent_file()
@@ -127,27 +107,6 @@ fun! do#cmd#snippets()
     SnipMateOpenSnippetFiles
   else
     echo "[do.vim] No snippets plugin detected."
-  endif
-endfun "}}}
-
-fun! do#cmd#delete_swap()
-  "{{{1
-  let pat = &directory . '/' . expand('%:t') . '.sw[klmnop]*'
-  let swapfiles = glob(pat,0,1)
-  let nfiles = len(swapfiles)
-  let question = printf('Delete %s (%s file%s)?', pat, nfiles, nfiles>1?'s':'')
-  let answer = confirm(question, "&Yes\n&Ask\n&No")
-  if nfiles && (answer == 1 || answer == 2)
-    for sf in swapfiles
-      let can_delete = answer == 1 || confirm('Delete '.sf.'?', "&Yes\n&No") == 1
-      if can_delete
-        if delete(sf)
-          echo 'Deleted' sf
-        else
-          echoerr 'Failed to delete' sf . '!'
-        endif
-      endif
-    endfor
   endif
 endfun "}}}
 
@@ -298,23 +257,7 @@ fun! s:restore_reg() "{{{1
   call setreg("\"", s:oldreg[0], s:oldreg[1])
 endfun
 
-fun! s:redir(input, is_var) "{{{1
-  if empty(a:input) | return do#msg('Canceled.') | endif
-  call s:store_reg()
-  redir @"
-  if a:is_var
-    silent! exe "echo ".a:input
-  else
-    silent! exe a:input
-  endif
-  redir END
-  let out = copy(@")
-  new
-  setlocal buftype=nofile bufhidden=wipe noswapfile nobuflisted
-  silent! put! = out
-  call s:restore_reg()
-  nnoremap <buffer><nowait><silent> q :quit<cr>:redraw!<cr>
-  call do#msg("q: close buffer", 1)
-endfun "}}}
+"}}}
+
 
 " vim: et sw=2 ts=2 sts=2 fdm=marker

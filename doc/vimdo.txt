@@ -95,50 +95,75 @@ To create new groups, see |vimdo-groups|.
 GROUPS                                                          *vimdo-groups*
 ==============================================================================
 
-An example of creating a new group with fugitive.vim commands:
->
-  nnoremap \gr  :echo system("git reset")<cr>
-  nnoremap \gs  :Gstatus<cr>
-  nnoremap \gp  :redraw! <bar> echo "Pushing...\t" <bar> echon system("git push")<cr>
-  nnoremap \ga  :echo system("git add -u")."Git: staged all tracked files"<cr>
-  nnoremap \gl  :0Glog<cr>
-  nnoremap \gd  :Gvdiff<Space>
-  nnoremap \gC  :Gcommit --amend<cr>
-  nnoremap \gA  :call system("git add -u")<cr>:Gcommit --amend<cr>
-  nnoremap \gbl :call do#git#blame_line(1)<cr>
-  nnoremap \gbL :call do#git#blame_line(0)<cr>
+An example of creating a new group with `do` prefix.
 
+First, you assign your mappings, as you normally would. Examples:
+
+Copy entire buffer to system clipboard: >
+  nnoremap doca   :%y+<cr>
+
+Select entire buffer: >
+  nnoremap dosa   ggVG
+
+Json pretty print: >
+  nnoremap dojpp  :%!python -m json.tool<cr>
+
+Set very large tabs (table mode): >
+  nnoremap dotm   :setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>
+
+Trim whitespaces (and print their number): >
+  nnoremap dows   :m`:keeppatterns %s/\s\+$//gn<CR>:keeppatterns silent! %s/\s\+$//e<CR>``
+
+You initialize the `g:vimdo` dict (if you didn't already!):
+>
   let g:vimdo = {}
-  let g:vimdo['\g'] = { 'label' : 'git commands', 'require_description': 1,
-    \'r':  'reset',
-    \'s':  'status',
-    \'p':  'push',
-    \'a':  'stage all tracked files',
-    \'l':  'log for current file',
-    \'d':  'diff',
-    \'C':  'amend commit',
-    \'A':  'stage all tracked files and amend',
-    \'bl': 'blame current line (cmdline)',
-    \'bL': 'blame current line (buffer)',
+
+Then register descriptions for the mappings (see that the mapping prefix isn't
+repeated):
+>
+  let g:vimdo.do = {
+    \'ca':  'copy all',
+    \'sa':  'select all',
+    \'jpp': 'json pretty print',
+    \'tm':  'table mode',
+    \'ws':  'trim whitespaces',
     \}
 
+Finally you create a mapping to show your group:
+>
+  nnoremap dO  :ShowDos do<cr>
+
+------------------------------------------------------------------------------
+
+An example of creating a new group with fugitive.vim commands.
+
+You assign your mappings:
+>
+  nnoremap \gs  :Gstatus<cr>
+  nnoremap \gp  :Gpush<cr>
+  nnoremap \gl  :0Glog<cr>
+  nnoremap \gd  :Gvdiff<Space>
+  nnoremap \gc  :Gcommit<cr>
+  nnoremap \ga  :Gcommit --amend<cr>
+
+You initialize the new group:
+>
+  let g:vimdo['\g'] = { 'label' : 'git commands',
+    \'s':  'status',
+    \'p':  'push',
+    \'l':  'log for current file',
+    \'d':  'diff',
+    \'c':  'commit',
+    \'a':  'amend commit',
+    \}
+
+Inside the group dictionary you can see:
+- group options (see |vimdo-group|)
+- pairs (continuation of) mapping/description
+
+Finally you create a mapping to show your group:
+>
   nnoremap \g? :ShowDos \g<cr>
-
-What happens here?
-
-- you assign your mappings, as you normally would.
-- you initialize the `g:vimdo` dict (if you didn't already!)
-- you create a key inside of it, that is the mapping prefix you are using.
-- you populate this key with the continuation of each mapping, and set a description.
-- finally you create a mapping to show your group.
-
-You can see a couple of `group options`:
-
-- `label` is a label that will be shown when running the command
-- `require_description` means that mappings that don't have a description
-  won't be listed when running the command.
-
-You can read more about group options in |vimdo-group|.
 
 
 
@@ -172,23 +197,13 @@ In the created dictionary, there can be these optional keys:
 
 `interactive`: run in interactive mode.
                                                    *vimdo-require_description*
-`require_description`: that is, a dict key/value pair. May be convenient
-    because, in reality, you don't need to create a dictionary at all, just
-    execute:
->
-    :ShowDos {prefix}
-<
-    and all mappings that begin with that prefix will be shown. Setting
-    `require_description` prevents unwanted mappings to be shown in the list,
-    but forces you to add dictionary entries for all items.
+`require_description`: Setting this option prevents unwanted mappings to be
+    shown in the list, but forces you to add dictionary entries for all items.
 
                                                              *vimdo-arbitrary*
-`arbitrary`: if true, the group name is not the prefix, is just a group name.
-    The whole keys will be checked for a mapping, but only those ones.
-    This allows you to show a set of mapping of your choosing, from the ground
-    up. Pointless to use `require_description` with this one.
-    For example, you could use arbitrary groups in your |ftplugin| files, to
-    show mappings that you define there.
+`arbitrary`: if true, the group name is not the prefix, it's just a group
+    name. The whole keys will be checked for a mapping, but only those ones.
+    This allows you to show a set of mapping of your choosing.
 
 
 
@@ -262,58 +277,37 @@ If NOT using the default prefix, these mappings will be:
 
 These are the default commands:
 
+`doft`  ->  do open ftplugin file (custom preferred)
+`dofT`  ->  do open ftplugin file (stock vim/nvim only)
+`dosn`  ->  do open snippets file for the current filetype
+`dorf`  ->  do reindent file
+`docf`  ->  do copy file
 `dodo`  ->  do diff other file (in next window)
 `dods`  ->  do diff with saved
 `dodl`  ->  do diff with last git revision
 `dodh`  ->  do diff with HEAD
-`dorc`  ->  do redir command (command output to new buffer)
-`dore`  ->  do redir expression (expression to new buffer)
-`dorf`  ->  do reindent file (without altering jump list or view position)
-`dows`  ->  do trim whitespaces
-`doec`  ->  do echo color infos
-`dosn`  ->  do open snippets file for the current filetype
-`doft`  ->  do open ftplugin file (custom preferred)
-`dofT`  ->  do open ftplugin file (stock vim/nvim only)
 `dout`  ->  do update tags (runs `ctags -R .`, or `b:ctags_cmd` if defined)
 `dovp`  ->  do vim profiling (first time activates, second time stops and quits)
-`dossa` ->  do print syntax infos for word under cursor
+`doss`  ->  do print syntax infos for word under cursor
+`doec`  ->  do echo color infos
 `dofcr` ->  do find CR (find/correct files with CRLF line endings)
 
 If you don't want all defaults, but want some of them, add them to your `vimrc`:
 >
-  nnoremap dows  :call do#cmd#trim_whitespaces()<cr>
-  nnoremap dout  :call do#cmd#update_tags()<cr>
-  nnoremap dovp  :call do#cmd#profiling()<cr>
+  nnoremap doft  :call do#cmd#open_ftplugin()<cr>
+  nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>
+  nnoremap dosn  :call do#cmd#snippets()<cr>
+  nnoremap dorf  :call do#cmd#reindent_file()<cr>
+  nnoremap docf  :call do#cmd#copy_file()<cr>
   nnoremap dodo  :call do#diff#other()<cr>
   nnoremap dods  :call do#diff#saved()<cr>
   nnoremap dodl  :call do#diff#last_revision(0)<cr>
   nnoremap dodh  :call do#diff#last_revision(1)<cr>
-  nnoremap dossa :call do#cmd#syntax_attr()<cr>
+  nnoremap dout  :call do#cmd#update_tags()<cr>
+  nnoremap dovp  :call do#cmd#profiling()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
-  nnoremap dore  :call do#cmd#redir_expression()<cr>
-  nnoremap dorf  :call do#cmd#reindent_file()<cr>
+  nnoremap dossa :call do#cmd#syntax_attr()<cr>
   nnoremap doec  :call do#color#echo()<cr>
-  nnoremap doft  :call do#cmd#open_ftplugin()<cr>
-  nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>
-  nnoremap dosn  :call do#cmd#snippets()<cr>
-  nnoremap dorc  :RedirCommand<space>
-  command! -nargs=* -complete=command RedirCommand call do#redir_cmd(<f-args>)
-
-To extend default group with some other commands (example):
->
-  nnoremap dorf   m`gg=G``
-  nnoremap doca   :%y+<cr>
-  nnoremap dosa   ggVG
-  nnoremap dojpp  :%!python -m json.tool<cr>
-  nnoremap dotm   :setlocal noexpandtab tabstop=20 shiftwidth=20 softtabstop=20 nowrap<cr>
-
-  let g:vimdo = {'do':
-    \'rf':  'reindent file',
-    \'ca':  'copy all',
-    \'sa':  'select all',
-    \'jpp': 'json pretty print',
-    \'tm':  'table mode',
-    \}
 
 
 

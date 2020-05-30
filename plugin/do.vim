@@ -33,18 +33,14 @@ if get(g:, 'vimdo_use_default_commands', 0)
   exe 'nnoremap <silent> '.s:p.'ds  :call do#diff#saved()<cr>'
   exe 'nnoremap <silent> '.s:p.'ec  :call do#color#echo()<cr>'
   exe 'nnoremap <silent> '.s:p.'fT  :call do#cmd#open_ftplugin(1)<cr>'
-  exe 'nnoremap <silent> '.s:p.'fcr :call do#cmd#find_crlf(1, "")<cr>'
   exe 'nnoremap <silent> '.s:p.'ft  :call do#cmd#open_ftplugin()<cr>'
-  exe 'nnoremap <silent> '.s:p.'re  :call do#cmd#redir_expression()<cr>'
+  exe 'nnoremap <silent> '.s:p.'fcr :call do#cmd#find_crlf(1, "")<cr>'
   exe 'nnoremap <silent> '.s:p.'rf  :call do#cmd#reindent_file()<cr>'
   exe 'nnoremap <silent> '.s:p.'sn  :call do#cmd#snippets()<cr>'
-  exe 'nnoremap <silent> '.s:p.'ssa :call do#cmd#syntax_attr()<cr>'
-  exe 'nnoremap <silent> '.s:p.'sw  :call do#cmd#delete_swap()<cr>'
+  exe 'nnoremap <silent> '.s:p.'ss  :call do#cmd#syntax_attr()<cr>'
   exe 'nnoremap <silent> '.s:p.'ut  :call do#cmd#update_tags()<cr>'
   exe 'nnoremap <silent> '.s:p.'vp  :call do#cmd#profiling()<cr>'
-  exe 'nnoremap <silent> '.s:p.'ws  :call do#cmd#trim_whitespaces()<cr>'
 
-  exe 'nnoremap '.s:p.'rc  :RedirCommand<space>'
   exe 'nnoremap '.s:p.'    <NOP>'
 
   if g:vimdo_default_prefix ==# 'do'
@@ -52,10 +48,8 @@ if get(g:, 'vimdo_use_default_commands', 0)
     nnoremap doB :ShowDos!<cr>
   else
     exe 'nnoremap '.s:p.'? :ShowDos<cr>'
-    exe 'nnoremap '.s:p.'@ :ShowDos!<cr>'
+    exe 'nnoremap '.s:p.'! :ShowDos!<cr>'
   endif
-
-  command! -nargs=* -complete=command RedirCommand call do#cmd#redir_cmd(<f-args>)
 
   let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
         \ 'cf':  'copy file',
@@ -63,19 +57,15 @@ if get(g:, 'vimdo_use_default_commands', 0)
         \ 'dl':  'diff last revision',
         \ 'do':  'diff other',
         \ 'ds':  'diff saved',
-        \ 'sw':  'delete swap',
         \ 'ec':  'echo color',
+        \ 'ft':  'ftplugin file',
         \ 'fT':  'ftplugin file (default)',
         \ 'fcr': 'find files with CRLF endings',
-        \ 'ft':  'ftplugin file',
-        \ 'rc':  'redir command',
-        \ 're':  'redir expression',
         \ 'rf':  'reindent file',
         \ 'sn':  'open snippets file',
-        \ 'ssa': 'show syntax attributes',
+        \ 'ss':  'show syntax attributes',
         \ 'ut':  'update tags',
         \ 'vp':  'profiling',
-        \ 'ws':  'trim whitespaces',
         \}, get(g:vimdo, g:vimdo_default_prefix, {}))
 endif
 
