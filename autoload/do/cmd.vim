@@ -61,7 +61,7 @@ fun! do#cmd#copy_file()
     let n += 1
     let new = base . "_copy" . n
   endwhile
-  call feedkeys(":saveas ". new . "." . ext . go_left, 'n')
+  call feedkeys(":saveas ". fnameescape(new) . "." . ext . go_left, 'n')
 endfun "}}}
 
 fun! do#cmd#open_ftplugin(...)
