@@ -16,10 +16,15 @@ fun! do#show(group, ...)
     echo '[do.vim] you must enter a mapping prefix'
     return
   endif
-  call s:init_highlight()
+  call s:init()
   let group = empty(a:group) ? g:vimdo_default_prefix : a:group
-  call s:show_all_dos(group, a:0 ? a:1 : 0, '')
+  call s:show_all_dos(group, a:0 ? a:1 : 0, '', 0)
 endfun "}}}
+
+fun! do#menu(menu) abort
+  call s:init()
+  return s:show_all_dos(a:menu, 0, '', 1)
+endfun
 
 ""=============================================================================
 " Function: s:show_all_dos
@@ -30,14 +35,20 @@ endfun "}}}
 " @param filter: the applied filter, when redrawing
 ""=============================================================================
 ""
-fun! s:show_all_dos(group, buffer, filter)
+fun! s:show_all_dos(group, buffer, filter, menu)
   " Main function. {{{1
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
   endif
 
-  let group = has_key(g:vimdo, a:group) ? g:vimdo[a:group] : {}
-  let pre = a:group
+  if a:menu
+    let group = a:group
+    let pre = ''
+  else
+    let group = has_key(g:vimdo, a:group) ? g:vimdo[a:group] : {}
+    let pre = a:group
+  endif
+
   let pat = match(pre, '<') == 0 ? pre :
         \ s:winOS ? substitute(pre, '\', '\\\\', '') : fnameescape(pre)
 
@@ -46,6 +57,16 @@ fun! s:show_all_dos(group, buffer, filter)
   let mode        = mode() == 'n' ? 'n' : 'x'
   let show_file   = get(g:, 'vimdo_show_filename', 0)
   let with_filter = !empty(a:filter)
+
+  " menu: will return chosen item
+  if a:menu
+    let group.arbitrary = 1
+    let group.require_description = 1
+    let group.interactive = 1
+    let group.simple = 1
+    let group.show_rhs = 0
+    let group.label = get(a:group, 'label', '')
+  endif
 
   " group dictionary options
   let s:compact    = has_key(group, 'compact') && group.compact
@@ -133,6 +154,9 @@ fun! s:show_all_dos(group, buffer, filter)
     endif
   endfor
 
+  " menu: return nothing if no matches are found
+  if a:menu && empty(D) | return '' | endif
+
   " interactive: terminate if no matches are found
   if interactive && empty(D) | return do#msg("No matches") | endif
 
@@ -186,7 +210,10 @@ fun! s:show_all_dos(group, buffer, filter)
   endif
   echohl None
 
-  if interactive
+  if a:menu
+    echo group.label . ': '
+    return nr2char(getchar())
+  elseif interactive
     call s:interactive(a:group, a:buffer)
   else
     call s:loop(a:group, a:buffer)
@@ -202,9 +229,9 @@ endfun "}}}
 
 let s:winOS = has('win32') || has('win16') || has('win64')
 
-fun! s:init_highlight()
+fun! s:init()
   " Set vimdoDesc highlight group. {{{1
-  let s:current = ''
+  let s:current = '' " current typed key
   if &background == 'light'
     hi link vimdoDesc String
   else
@@ -224,10 +251,10 @@ fun! s:loop(group, buffer)
     call feedkeys("\<Esc>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:buffer, '')
+    call s:show_all_dos(a:group, a:buffer, '', 0)
   else
     redraw!
-    call s:show_all_dos(a:group, a:buffer, nr2char(c))
+    call s:show_all_dos(a:group, a:buffer, nr2char(c), 0)
   endif
 endfun "}}}
 
@@ -247,11 +274,11 @@ fun! s:interactive(group, buffer)
     call feedkeys("\<cr>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:buffer, '')
+    call s:show_all_dos(a:group, a:buffer, '', 0)
   else
     redraw!
     let s:current .= nr2char(c)
-    call s:show_all_dos(a:group, a:buffer, '')
+    call s:show_all_dos(a:group, a:buffer, '', 0)
   endif
 endfun "}}}
 
@@ -293,7 +320,8 @@ fun! s:get_maps(group)
   " Returns: the group dictionary, without the options, only the mappings
 
   let remove = ['require_description', 'label', 'arbitrary', 'interactive',
-        \       'compact', 'keys_width', 'desc_width', 'simple', 'show_rhs']
+        \       'compact', 'keys_width', 'desc_width', 'simple', 'show_rhs',
+        \       'menu']
   return filter(keys(a:group), 'index(remove, v:val) < 0')
 endfun "}}}
 

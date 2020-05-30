@@ -11,6 +11,7 @@ DO.VIM - TABLE OF CONTENTS                                    *do.vim* *vimdo*
   Interactive mode                                    |vimdo-interactive-mode|
   Group dictionary                                    |vimdo-group-dictionary|
   Arbitrary groups                                    |vimdo-arbitrary-groups|
+  Menu groups                                         |vimdo-menu-groups|
   Default commands                                    |vimdo-default-commands|
 
 
@@ -267,6 +268,29 @@ If the `rhs` is recursive, add a third element:
 Note: the {rhs} of the custom command is run with |feedkeys()|, so it must use
 `double quotes` and special characters must be escaped.
 
+
+
+MENU GROUPS                                                *vimdo-menu-groups*
+==============================================================================
+
+It's not meant to be run with the |:ShowDos| command, but rather invoked
+through a function call, that will return the typed character.
+
+It accepts a single character, so it's not meant for complex choices.
+Think of it as an alternative to |inputlist()| that needs no <Return>.
+
+
+Example:
+>
+  let result = do#menu({ 'label': 'Type a letter',
+      \'a':  'run option "a"',
+      \'b':  'run option "b"',
+      \'c':  'run option "c"',
+      \})
+
+  if result == 'a'
+    " do something
+  endif
 
 
 
