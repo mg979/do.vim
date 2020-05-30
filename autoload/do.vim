@@ -3,14 +3,14 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 ""=============================================================================
-" Function: do#show_all_dos
+" Function: do#show
 " Show mappings that belong to the group, with description if it has been set
 
 " @param group: the requested group or mapping prefix
 " @param ...: (BANG) show buffer mappings if given
 ""=============================================================================
 ""
-fun! do#show_all_dos(group, ...)
+fun! do#show(group, ...)
   " Entry point for ShowDos command. {{{1
   if empty(a:group) && !exists('g:vimdo_default_prefix')
     echo '[do.vim] you must enter a mapping prefix'

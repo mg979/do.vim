@@ -20,7 +20,7 @@ let g:loaded_vimdo = 1
 
 let g:vimdo = get(g:, 'vimdo', {})
 
-command! -nargs=? -bang ShowDos call do#show_all_dos(<q-args>, <bang>0)
+command! -nargs=? -bang ShowDos call do#show(<q-args>, <bang>0)
 
 if get(g:, 'vimdo_use_default_commands', 0)
   let g:vimdo_default_prefix = get(g:, 'vimdo_default_prefix', 'do')
