@@ -46,36 +46,6 @@ fun! do#diff#saved()
 endfun
 
 
-fun! do#diff#last_revision(head)
-  " Diff with last git revision.
-  if !exists('g:loaded_fugitive') | return do#msg("vim-fugitive is needed.") | endif
-  let f = resolve(expand("%:p"))
-
-  if empty(FugitiveStatusline()) | return do#msg("not a git repo.")
-  elseif !s:is_tracked(f)        | return do#msg("not a tracked file.") | endif
-
-  exe (tabpagenr()-1)."tabedit" fnameescape(f)
-  if a:head
-    Gvdiff
-    setlocal statusline=%#ErrorMsg\ HEAD
-  else
-    Gvdiff HEAD^
-    setlocal statusline=%#ErrorMsg\ HEAD^
-  endif
-  if expand("%:p") != f
-    wincmd x
-  endif
-  redraw!
-endfun
-
-
-fun! s:is_tracked(file)
-  " Check if file is tracked in repository.
-  call system(fugitive#repo().git_command('ls-files', '--error-unmatch', a:file))
-  return !v:shell_error
-endfun
-
-
 fun! s:wincolor()
   " Set window background color, if supported
   if &bg == 'dark'

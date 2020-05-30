@@ -27,8 +27,6 @@ if get(g:, 'vimdo_use_default_commands', 0)
   let s:p = g:vimdo_default_prefix
 
   exe 'nnoremap          '.s:p.'cf  :call do#cmd#copy_file()<cr>'
-  exe 'nnoremap <silent> '.s:p.'dh  :call do#diff#last_revision(1)<cr>'
-  exe 'nnoremap <silent> '.s:p.'dl  :call do#diff#last_revision(0)<cr>'
   exe 'nnoremap <silent> '.s:p.'do  :call do#diff#other()<cr>'
   exe 'nnoremap <silent> '.s:p.'ds  :call do#diff#saved()<cr>'
   exe 'nnoremap <silent> '.s:p.'ec  :call do#color#echo()<cr>'
@@ -53,8 +51,6 @@ if get(g:, 'vimdo_use_default_commands', 0)
 
   let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
         \ 'cf':  'copy file',
-        \ 'dh':  'diff with HEAD',
-        \ 'dl':  'diff last revision',
         \ 'do':  'diff other',
         \ 'ds':  'diff saved',
         \ 'ec':  'echo color',
