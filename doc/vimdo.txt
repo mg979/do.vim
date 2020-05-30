@@ -6,11 +6,11 @@ DO.VIM - TABLE OF CONTENTS                                    *do.vim* *vimdo*
 
   Introduction                                        |vimdo-introduction|
   Quick start                                         |vimdo-quick-start|
-  Options                                             |vimdo-options|
   Groups                                              |vimdo-groups|
+  Options                                             |vimdo-options|
   Interactive mode                                    |vimdo-interactive-mode|
   Group dictionary                                    |vimdo-group-dictionary|
-  Advanced usage                                      |vimdo-advanced-usage|
+  Arbitrary groups                                    |vimdo-arbitrary-groups|
   Default commands                                    |vimdo-default-commands|
 
 
@@ -65,30 +65,6 @@ show <buffer> mappings:
 
 That's it for a basic usage.
 
-
-
-
-OPTIONS                                                        *vimdo-options*
-==============================================================================
-
-To show the file where the mapping is defined:
->
-  let g:vimdo_show_filename = 1
-
-To always run in interactive mode (see |vimdo-interactive|):
->
-  let g:vimdo_interactive = 1
-
-If you want the default commands:
->
-  let g:vimdo_use_default_commands = 1
-
-If you to change the default prefix (`do`) for them:
->
-  let g:vimdo_default_prefix = 'do'
-
-To read more about the default commands, see |vimdo-default-commands|.
-To create new groups, see |vimdo-groups|.
 
 
 
@@ -168,6 +144,33 @@ Finally you create a mapping to show your group:
 
 
 
+OPTIONS                                                        *vimdo-options*
+==============================================================================
+
+                                                       *g:vimdo_show_filename*
+To show the file where the mapping is defined:
+>
+  let g:vimdo_show_filename = 1
+<
+                                                         *g:vimdo_interactive*
+To always run in interactive mode (see |vimdo-interactive|):
+>
+  let g:vimdo_interactive = 1
+<
+                                                *g:vimdo_use_default_commands*
+If you want the default commands:
+>
+  let g:vimdo_use_default_commands = 1
+<
+                                                      *g:vimdo_default_prefix*
+If you to change the default prefix (`do`) for them:
+>
+  let g:vimdo_default_prefix = 'do'
+
+To read more about the default commands, see |vimdo-default-commands|.
+
+
+
 INTERACTIVE MODE                                           *vimdo-interactive*
 ==============================================================================
 
@@ -204,16 +207,16 @@ In the created dictionary, there can be these optional keys:
 `arbitrary`: if true, the group name is not the prefix, it's just a group
     name. The whole keys will be checked for a mapping, but only those ones.
     This allows you to show a set of mapping of your choosing.
+    See |vimdo-arbitrary-groups|.
 
+------------------------------------------------------------------------------
 
-
-ADVANCED USAGE                                                *vimdo-advanced*
-==============================================================================
-
-Used to define the padding of mappings/descriptions
+These variables control the padding of mappings/descriptions:
 >
   let g:vimdo_keys_width = 16
   let g:vimdo_desc_width = 40
+
+------------------------------------------------------------------------------
 
 More optional group dictionary keys:
 
@@ -240,24 +243,31 @@ More optional group dictionary keys:
 `show_rhs`: if present and set to 0, will prevent the rhs of the mappings from
     being displayed.
 
-Finally, you can define a command in the group dictionary, without having
-defined a mapping for it. This allows the creation of totally arbitrary
-groups. To do this, the dictionary element must contain:
+
+
+
+
+ARBITRARY GROUPS                                      *vimdo-arbitrary-groups*
+==============================================================================
+
+This kind of menu requires `arbitrary` to be set in the group.
+
+You can have groups with elements that aren't simple descriptions, but that
+include the full commands, and don't require a mapping. You can then create
+contextual menus that execute custom commands at keypress.
+
+The dictionary element must be a list amd not a string:
 >
-    {key} : [ {description}, {noremap}, {rhs} ]
+    {key} : [ 'description', "rhs" ]
 
-Note: with this system, you can also create contextual menus that execute
-custom commands at keypress!
+If the `rhs` is recursive, add a third element:
+>
+    {key} : [ 'description', "rhs", 1 ]
 
-Note: this kind of menu requires `arbitrary` to be set in the group.
+Note: the {rhs} of the custom command is run with |feedkeys()|, so it must use
+`double quotes` and special characters must be escaped.
 
-Note: when writing the {rhs} of the custom command, if any special character
-is present, the {rhs} must use `double quotes` and the special characters must
-be escaped. Only the following ones are accepted:
 
-    <cr>      -> `"\<cr>"`
-    <space>   -> `"\<space>"`
-    <bar>     -> `"\<bar>"`
 
 
 

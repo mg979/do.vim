@@ -331,7 +331,7 @@ fun! s:get_do(group, do, mode)
   " @param group: the requested group or mapping prefix
   " @param do: the requested mapping
   " @param mode: the mode (only normal mode seems to be supported right now...)
-  " Returns: a dict like the one returnad by maparg()
+  " Returns: a dict like the one returned by maparg()
 
   if !has_key(a:group, a:do)
     " not a custom dictionary, check for a mapped key
@@ -349,8 +349,10 @@ fun! s:get_do(group, do, mode)
 
   else
     " it's an arbitrary group with custom rhs
-    return {'noremap': a:group[a:do][1], 'lhs': a:do, 'rhs': a:group[a:do][2],
-          \ 'buffer': 0, 'custom': 1, 'description': a:group[a:do][0]}
+    let ret = {'lhs': a:do, 'rhs': a:group[a:do][1],
+          \    'buffer': 0, 'custom': 1, 'description': a:group[a:do][0]}
+    let ret.noremap = !( len(a:group[a:do]) > 2 && a:group[a:do][2] )
+    return ret
   endif
 endfun "}}}
 
