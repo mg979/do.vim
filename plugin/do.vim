@@ -48,8 +48,10 @@ if get(g:, 'vimdo_use_default_commands', 0)
     exe 'nnoremap '.s:p.'? :ShowDos<cr>'
     exe 'nnoremap '.s:p.'! :ShowDos!<cr>'
   endif
+endif
 
-  let g:vimdo[g:vimdo_default_prefix] = extend({ 'label': 'do...',
+fun! do#default_grp() abort
+  return { 'label': 'do...',
         \ 'cf':  'copy file',
         \ 'do':  'diff other',
         \ 'ds':  'diff saved',
@@ -62,8 +64,8 @@ if get(g:, 'vimdo_use_default_commands', 0)
         \ 'ss':  'show syntax attributes',
         \ 'ut':  'update tags',
         \ 'vp':  'profiling',
-        \}, get(g:vimdo, g:vimdo_default_prefix, {}))
-endif
+        \}
+endfun
 
 "------------------------------------------------------------------------------
 

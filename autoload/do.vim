@@ -46,7 +46,7 @@ fun! s:show_all_dos(group, buffer, filter, menu)
     let group = a:group
     let pre = ''
   else
-    let group = has_key(g:vimdo, a:group) ? g:vimdo[a:group] : {}
+    let group = s:get_group(a:group)
     let pre = a:group
   endif
 
@@ -295,6 +295,16 @@ fun! s:pad(s, n)
     return a:s.spaces
   endif
 endfun "}}}
+
+fun! s:get_group(grp) abort
+  if !has_key(g:vimdo, a:grp) | return {} | endif
+  let group = g:vimdo[a:grp]
+  if a:grp == get(g:, 'vimdo_default_prefix', 'do') &&
+        \     get(g:, 'vimdo_use_default_commands', 0)
+    call extend(group, do#default_grp(), 'keep')
+  endif
+  return group
+endfun
 
 fun! s:get_file(map, mode)
   " Get file where the mapping is defined. {{{1
