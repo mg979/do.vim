@@ -39,7 +39,7 @@ What's the difference between this and just typing `:nmap ...`?
 
 QUICK START                                                *vimdo-quick-start*
 ==============================================================================
-
+                                                                    *:ShowDos*
 Use the main command to show all mappings that start with a prefix:
 >
   :ShowDos g
@@ -65,7 +65,12 @@ show <buffer> mappings:
     :ShowDos! g
 
 That's it for a basic usage.
+                                                                       *:Nmap*
+A little extra: the command `Nmap` is defined (if not already). It prints
+mappings as `:verbose nmap` would, but with a more compact formatting.
+Just as `ShowDos!`, `Nmap!` prints |<buffer>| mappings only.
 
+See also |g:vimdo_showdos_command| and |g:vimdo_nmap_command|.
 
 
 
@@ -147,29 +152,38 @@ Finally you create a mapping to show your group:
 
 OPTIONS                                                        *vimdo-options*
 ==============================================================================
+                                                      *g:vimdo_print_full_lhs*
+  Default: 1~
+
+    To print the full {lhs}, inclusive of the prefix.
 
                                                        *g:vimdo_show_filename*
-To show the file where the mapping is defined:
->
-  let g:vimdo_show_filename = 1
-<
+  Default: 0~
+
+    To show the file where the mapping is defined.
+
                                                          *g:vimdo_interactive*
-To always run in interactive mode (see |vimdo-interactive|):
->
-  let g:vimdo_interactive = 1
-<
+  Default: 0~
+
+    To run in interactive mode by default (see |vimdo-interactive|).
+
                                                 *g:vimdo_use_default_commands*
-If you want the default commands:
->
-  let g:vimdo_use_default_commands = 1
-<
+  Default: 0~
+
+    Create mappings for the default commands.
+
                                                       *g:vimdo_default_prefix*
-If you to change the default prefix (`do`) for them:
+  Default: 'do'~
+
+    If you to change the default prefix (`do`) for the |vimdo-default-commands|.
+
+                            *g:vimdo_showdos_command*   *g:vimdo_nmap_command*
+
+    You can change the default name for the `ShowDos` and `Nmap` commands:
 >
-  let g:vimdo_default_prefix = 'do'
-
-To read more about the default commands, see |vimdo-default-commands|.
-
+      let g:vimdo_showdos_command = 'ShowMaps'
+      let g:vimdo_nmap_command = 'Mappings'
+<
 
 
 INTERACTIVE MODE                                           *vimdo-interactive*

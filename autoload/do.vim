@@ -19,12 +19,18 @@ fun! do#show(group, ...)
   endif
   call s:init()
   let group = empty(a:group) ? get(g:, 'vimdo_default_prefix', 'do') : a:group
-  call s:show_all_dos(group, a:0 ? a:1 : 0, '', 0)
+  call s:show_all_dos(group, a:0 ? a:1 : 0, '', 0, 0)
 endfun "}}}
+
+fun! do#print(group, buffer) abort
+  " Entry point for Nmap command. {{{1
+  call s:init()
+  call s:show_all_dos(a:group, a:buffer, '', 0, 1)
+endfun
 
 fun! do#menu(menu) abort
   call s:init()
-  return s:show_all_dos(a:menu, 0, '', 1)
+  return s:show_all_dos(a:menu, 0, '', 1, 0)
 endfun
 
 ""=============================================================================
@@ -36,7 +42,7 @@ endfun
 " @param filter: the applied filter, when redrawing
 ""=============================================================================
 ""
-fun! s:show_all_dos(group, buffer, filter, menu)
+fun! s:show_all_dos(group, buffer, filter, menu, just_print)
   " Main function. {{{1
   if index(['n', 'v', 'V', ''], mode()) < 0
     return
@@ -66,7 +72,18 @@ fun! s:show_all_dos(group, buffer, filter, menu)
     let group.interactive = 1
     let group.simple = 1
     let group.show_rhs = 0
-    let group.label = get(a:group, 'label', '')
+    let lab = get(a:group, 'label', '')
+  endif
+
+  " just_print: simple display, no interaction
+  if a:just_print
+    let group.interactive = 0
+    let group.simple = 1
+    let group.show_rhs = 1
+    let group.keys_width = 30
+    let group.desc_width = 0
+    let lab = ''
+    let show_file = 1
   endif
 
   " group dictionary options
@@ -85,6 +102,7 @@ fun! s:show_all_dos(group, buffer, filter, menu)
         \          group.keys_width : get(g:, 'vimdo_keys_width', 16)
   let desc_width = has_key(group, 'desc_width') ?
         \          group.desc_width : get(g:, 'vimdo_desc_width', 40)
+  let full_lhs   = get(g:, 'vimdo_print_full_lhs', 1)
 
   if has_key(group, 'arbitrary') && group.arbitrary
     let dos = s:get_maps(group)
@@ -119,9 +137,11 @@ fun! s:show_all_dos(group, buffer, filter, menu)
   " 4. also remove the prefix itself, if it's mapped to <NOP>
 
   let D = {}
+  let max_lhs_width = 0
   for do in dos
     if do ==# 'order' | continue | endif  " not a mapping, it's their order
     let d = s:get_do(group, do, mode)
+    if empty(d) | continue | endif
     let custom = has_key(d, 'custom')
     if (a:buffer && !d.buffer) ||
           \ with_filter && match(d.lhs, '\C^'.pat.a:filter) != 0 ||
@@ -131,6 +151,8 @@ fun! s:show_all_dos(group, buffer, filter, menu)
           \ ( pre ==# do && d.rhs ==? '<NOP>' )
       continue
     endif
+
+    if strwidth(d.lhs) > max_lhs_width | let max_lhs_width = strwidth(d.lhs) | endif
 
     " flags as :help map-listing
     let flags = ''
@@ -154,6 +176,13 @@ fun! s:show_all_dos(group, buffer, filter, menu)
       return
     endif
   endfor
+
+  " if some of the LHS would be trimmed, shrink the descriptions instead
+  if max_lhs_width > keys_width
+    let diff = max_lhs_width - keys_width
+    let keys_width = max_lhs_width
+    let desc_width = max([0, desc_width - diff])
+  endif
 
   " menu: return nothing if no matches are found
   if a:menu && empty(D) | return '' | endif
@@ -196,12 +225,13 @@ fun! s:show_all_dos(group, buffer, filter, menu)
     endif
     for do in s:sort_dos(D, group)
       if !has_key(D, do) | continue | endif
-      echohl WarningMsg   | echo  s . s:pad(do, keys_width)
+      let K = a:just_print || full_lhs ? a:group . do : do
+      echohl WarningMsg   | echo  s . s:pad(K, keys_width)
       echohl Special      | echon s:pad(D[do][0], desc_width)
       if show_file
-        echohl Statement    | echon s:pad(D[do][1], 20)
+        echohl Statement    | echon s:pad(D[do][1], 40)
         echohl Special      | echon s:pad(D[do][2], 3)
-        echohl None         | echon s:pad(D[do][3], &columns - 83)
+        echohl None         | echon s:pad(D[do][3], &columns - 103)
       elseif s:show_rhs
         echohl Statement    | echon s:pad(D[do][2], 3)
         echohl None         | echon s:pad(D[do][3], &columns - 63)
@@ -216,7 +246,7 @@ fun! s:show_all_dos(group, buffer, filter, menu)
     return nr2char(getchar())
   elseif interactive
     call s:interactive(a:group, a:buffer)
-  else
+  elseif !a:just_print
     call s:loop(a:group, a:buffer)
   endif
 endfun "}}}
@@ -252,10 +282,10 @@ fun! s:loop(group, buffer)
     call feedkeys("\<Esc>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:buffer, '', 0)
+    call s:show_all_dos(a:group, a:buffer, '', 0, 0)
   else
     redraw!
-    call s:show_all_dos(a:group, a:buffer, nr2char(c), 0)
+    call s:show_all_dos(a:group, a:buffer, nr2char(c), 0, 0)
   endif
 endfun "}}}
 
@@ -275,11 +305,11 @@ fun! s:interactive(group, buffer)
     call feedkeys("\<cr>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:buffer, '', 0)
+    call s:show_all_dos(a:group, a:buffer, '', 0, 0)
   else
     redraw!
     let s:current .= nr2char(c)
-    call s:show_all_dos(a:group, a:buffer, '', 0)
+    call s:show_all_dos(a:group, a:buffer, '', 0, 0)
   endif
 endfun "}}}
 
@@ -312,13 +342,17 @@ fun! s:get_file(map, mode)
   exe "silent! verbose ".a:mode."map ".a:map
   redir END
   let m = split(m, '\n')
-  for i in range(len(m))
-    if match(m[i], escape(a:map, '\')) == 3
-      let m = m[i+1]
-      break
-    endif
-  endfor
-  return fnamemodify(m, ':t')
+  try
+    for i in range(len(m))
+      if match(m[i], escape(a:map, '~*\')) == 3
+        let m = m[i+1]
+        break
+      endif
+    endfor
+    return fnamemodify(m, ':t')
+  catch
+    return ''
+  endtry
 endfun "}}}
 
 fun! s:get_maps(group)
