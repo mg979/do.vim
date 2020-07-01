@@ -6,12 +6,12 @@ DO.VIM - TABLE OF CONTENTS                                    *do.vim* *vimdo*
 
   Introduction                                        |vimdo-introduction|
   Quick start                                         |vimdo-quick-start|
+  As inputlist() replacement                          |vimdo-inputlist|
   Groups                                              |vimdo-groups|
   Options                                             |vimdo-options|
   Interactive mode                                    |vimdo-interactive-mode|
   Group dictionary                                    |vimdo-group-dictionary|
   Arbitrary groups                                    |vimdo-arbitrary-groups|
-  Menu groups                                         |vimdo-menu-groups|
   Default commands                                    |vimdo-default-commands|
 
 
@@ -31,7 +31,6 @@ What's the difference between this and just typing `:nmap ...`?
 
 - you can set descriptions for each mapping, and the output is more readable.
 - you can filter entries by pressing a key.
-- it can show the files where mappings are defined.
 - it can be run in interactive mode.
 
 
@@ -70,7 +69,37 @@ A little extra: the command `Nmap` is defined (if not already). It prints
 mappings as `:verbose nmap` would, but with a more compact formatting.
 Just as `ShowDos!`, `Nmap!` prints |<buffer>| mappings only.
 
-See also |g:vimdo_showdos_command| and |g:vimdo_nmap_command|.
+Finally, if you don't like the commands' names, you can redefine them.
+See |g:vimdo_showdos_command| and |g:vimdo_nmap_command|.
+
+
+
+
+
+AS INPUTLIST() REPLACEMENT                                   *vimdo-inputlist*
+==============================================================================
+
+It's not meant to be run with the |:ShowDos| command, but rather invoked
+through a function call, that will return the typed character.
+
+It accepts a single character, so it's not meant for complex choices either.
+Think of it as an alternative to |inputlist()| that needs no <Return>.
+
+
+Example:
+>
+  let result = do#menu({ 'label': 'Type a letter: ',
+      \'a':  'run option "a"',
+      \'b':  'run option "b"',
+      \'c':  'run option "c"',
+      \})
+
+  if result == 'a'
+    echo 'you chose "a"'
+  else
+    echo 'you chose something else'
+  endif
+
 
 
 
@@ -157,10 +186,25 @@ OPTIONS                                                        *vimdo-options*
 
     To print the full {lhs}, inclusive of the prefix.
 
+                                                            *g:vimdo_show_rhs*
+  Default: 1~
+
+    Show the {rhs} of each mapping.
+
                                                        *g:vimdo_show_filename*
   Default: 0~
 
     To show the file where the mapping is defined.
+
+                                                              *g:vimdo_simple*
+  Default: 0~
+
+    Just show the mappings.
+
+                                                             *g:vimdo_compact*
+  Default: 0~
+
+    Use the compact view by default.
 
                                                          *g:vimdo_interactive*
   Default: 0~
@@ -175,7 +219,7 @@ OPTIONS                                                        *vimdo-options*
                                                       *g:vimdo_default_prefix*
   Default: 'do'~
 
-    If you to change the default prefix (`do`) for the |vimdo-default-commands|.
+    If you want to change the prefix for the |vimdo-default-commands|.
 
                             *g:vimdo_showdos_command*   *g:vimdo_nmap_command*
 
@@ -284,31 +328,6 @@ Note: the {rhs} of the custom command is run with |feedkeys()|, so it must use
 
 
 
-MENU GROUPS                                                *vimdo-menu-groups*
-==============================================================================
-
-It's not meant to be run with the |:ShowDos| command, but rather invoked
-through a function call, that will return the typed character.
-
-It accepts a single character, so it's not meant for complex choices.
-Think of it as an alternative to |inputlist()| that needs no <Return>.
-
-
-Example:
->
-  let result = do#menu({ 'label': 'Type a letter',
-      \'a':  'run option "a"',
-      \'b':  'run option "b"',
-      \'c':  'run option "c"',
-      \})
-
-  if result == 'a'
-    " do something
-  endif
-
-
-
-
 DEFAULT COMMANDS                                      *vimdo-default-commands*
 ==============================================================================
 
@@ -350,7 +369,7 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dout  :call do#cmd#update_tags()<cr>
   nnoremap dovp  :call do#cmd#profiling()<cr>
   nnoremap dofcr :call do#cmd#find_crlf(1, "")<cr>
-  nnoremap dossa :call do#cmd#syntax_attr()<cr>
+  nnoremap doss  :call do#cmd#syntax_attr()<cr>
   nnoremap doec  :call do#color#echo()<cr>
 
 

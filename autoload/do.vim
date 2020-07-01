@@ -56,8 +56,10 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     let pre = a:group
   endif
 
+  let pre = s:trans_lhs(pre)
   let pat = match(pre, '<') == 0 ? pre :
         \ s:winOS ? substitute(pre, '\', '\\\\', '') : fnameescape(pre)
+  let pat = s:trans_lhs(pat)
 
   let sep         = repeat('-', &columns - 10)
   let lab         = has_key(group, 'label') ?  pre."\t\t".group.label : pre
@@ -87,7 +89,8 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
   endif
 
   " group dictionary options
-  let s:compact    = has_key(group, 'compact') && group.compact
+  let s:compact    = has_key(group, 'compact') ?
+        \            group.compact : get(g:, 'vimdo_compact', 0)
   let require_desc = s:compact || (has_key(group, 'require_description')
         \            && group.require_description)
   let interactive  = has_key(group, 'interactive') ?
@@ -114,9 +117,6 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     silent! exe mode.'map '.pre
     redir END
     let dos = split(dos, '\n')
-    let pre = substitute(pre, '\c<leader>', get(g:, 'mapleader', '\'), 'g')
-    let pat = substitute(pat, '\c<leader>', get(g:, 'mapleader', '\'), 'g')
-    let pat = substitute(pat, '<\([^>]\+\)>', '<\U\1>', 'g')
     for i in range(len(dos))
       let dos[i] = substitute(dos[i], 'n  ', '', '')
       let dos[i] = substitute(dos[i], '\s.*', '', '')
@@ -214,7 +214,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     echo "\n"
   else
     if s:simple
-      if !( has_key(group, 'label') && interactive )
+      if !( has_key(group, 'label') && interactive ) && !empty(lab)
         echo s.lab
       endif
       echo "\n"
@@ -225,7 +225,8 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     endif
     for do in s:sort_dos(D, group)
       if !has_key(D, do) | continue | endif
-      let K = a:just_print || full_lhs ? a:group . do : do
+      let K = !a:menu && (a:just_print || full_lhs) ? a:group . do : do
+      let K = s:trans_lhs(K)
       echohl WarningMsg   | echo  s . s:pad(K, keys_width)
       echohl Special      | echon s:pad(D[do][0], desc_width)
       if show_file
@@ -242,7 +243,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
   echohl None
 
   if a:menu
-    echo group.label . ': '
+    echo group.label
     return nr2char(getchar())
   elseif interactive
     call s:interactive(a:group, a:buffer)
@@ -439,6 +440,13 @@ fun! s:get_rhs(d)
   let r = substitute(r, "\<bar>", '<bar>', 'g')
   return r
 endfun "}}}
+
+fun! s:trans_lhs(string) abort
+  let ret = substitute(a:string, '<\([^>]\+\)>', '\="<".tolower(submatch(1)).">"', 'g')
+  let ret = substitute(ret, '\c<leader>', get(g:, 'mapleader', '\'), 'g')
+  let ret = substitute(ret, '<\([^>]\)\([^>]\+\)>', '<\u\1\2>', 'g')
+  return ret
+endfun
 
 fun! do#msg(m, ...)
   " A message. Without arg, it's a warning. {{{1
