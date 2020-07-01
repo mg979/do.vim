@@ -46,6 +46,14 @@ show `buffer` mappings:
 
 That's it for a basic usage.
 
+There is also another command:
+
+    :Nmap [some_key]
+
+It prints mappings as `:verbose nmap` would, but with a more compact formatting.
+Just as `ShowDos!`, `Nmap!` prints `<buffer>` mappings only.
+
+And you can use it as a replacement for `inputlist()`. Read the docs for infos.
 
 
 
