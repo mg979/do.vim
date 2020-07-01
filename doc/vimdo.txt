@@ -176,6 +176,16 @@ Finally you create a mapping to show your group:
 >
   nnoremap \g? :ShowDos \g<cr>
 
+------------------------------------------------------------------------------
+
+|Important|: if you create groups for special keys, they should be
+capitalized when you define the group:
+>
+  let g:vimdo['<Space>'] = { 'label' : '<Space> mappings', ... }
+
+But then it doesn't matter how you run the command:
+>
+  :ShowDos <space>
 
 
 
@@ -204,7 +214,8 @@ OPTIONS                                                        *vimdo-options*
                                                              *g:vimdo_compact*
   Default: 0~
 
-    Use the compact view by default.
+    Use the compact view by default. Not recommended since compact mode
+    requires descriptions, see |vimdo-require_description|.
 
                                                          *g:vimdo_interactive*
   Default: 0~

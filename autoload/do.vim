@@ -53,10 +53,9 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     let pre = ''
   else
     let group = s:get_group(a:group)
-    let pre = a:group
+    let pre = s:trans_lhs(a:group)
   endif
 
-  let pre = s:trans_lhs(pre)
   let pat = match(pre, '<') == 0 ? pre :
         \ s:winOS ? substitute(pre, '\', '\\\\', '') : fnameescape(pre)
   let pat = s:trans_lhs(pat)
@@ -190,6 +189,9 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
   " interactive: terminate if no matches are found
   if interactive && empty(D) | return do#msg("No matches") | endif
 
+  " abort anyway if there's nothing at all
+  if empty(a:filter) && empty(D) | return do#msg("Nothing to show.") | endif
+
   let s = ' '
   if s:compact
     let total_space = &columns - 1
@@ -199,10 +201,12 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     echo "\n"
     for do in s:sort_dos(D, group)
       if !has_key(D, do) | continue | endif
+      let K = !a:menu && (a:just_print || full_lhs) ? a:group . do : do
+      let K = s:trans_lhs(K)
       if space_left != total_space
-        echohl WarningMsg   | echon  s:pad(do, keys_width)
+        echohl WarningMsg   | echon  s:pad(K, keys_width)
       else
-        echohl WarningMsg   | echo  s . s:pad(do, keys_width)
+        echohl WarningMsg   | echo  s . s:pad(K, keys_width)
       endif
       echohl vimdoDesc      | echon s:pad(D[do][0], desc_width) . s
 
