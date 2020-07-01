@@ -88,11 +88,18 @@ Think of it as an alternative to |inputlist()| that needs no <Return>.
 
 Example:
 >
+  " with pairs choice/description
   let result = do#menu({ 'label': 'Type a letter: ',
       \'a':  'run option "a"',
       \'b':  'run option "b"',
       \'c':  'run option "c"',
       \})
+
+  " or with a list of choices
+  let result = do#menu({'label': 'Type a letter: ', 'items':  ['a', 'b', 'c']})
+
+  " or as a pure list, using g:vimdo_default_menu_label
+  let result = do#menu(['a', 'b', 'c'])
 
   if result == 'a'
     echo 'you chose "a"'
@@ -226,6 +233,11 @@ OPTIONS                                                        *vimdo-options*
   Default: 0~
 
     Create mappings for the default commands.
+
+                                                  *g:vimdo_default_menu_label*
+  Default: 'Choose: '~
+
+    Default label for menus created with |vimdo-inputlist|.
 
                                                       *g:vimdo_default_prefix*
   Default: 'do'~

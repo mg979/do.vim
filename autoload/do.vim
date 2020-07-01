@@ -50,7 +50,24 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
   endif
 
   if a:menu
-    let group = a:group
+    let default_label = get(g:, 'vimdo_default_menu_label', 'Choose: ')
+    if type(a:group) == v:t_dict
+      if has_key(a:group, 'items') && type(a:group.items) == v:t_list
+        let group = {}
+        let group.label = get(a:group, 'label', default_label)
+        for v in a:group.items
+          let group[v] = ' '
+        endfor
+      else
+        let group = a:group
+      endif
+    else
+      let group = {}
+      for v in a:group
+        let group[v] = ' '
+      endfor
+    endif
+    let group.label = get(group, 'label', default_label)
     let pre = ''
   else
     let group = s:get_group(a:group)
