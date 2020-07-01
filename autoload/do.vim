@@ -26,12 +26,13 @@ fun! do#print(group, buffer) abort
   " Entry point for Nmap command. {{{1
   call s:init()
   call s:show_all_dos(a:group, a:buffer, '', 0, 1)
-endfun
+endfun "}}}
 
 fun! do#menu(menu) abort
+  " Can be used as inputlist() replacement.
   call s:init()
   return s:show_all_dos(a:menu, 0, '', 1, 0)
-endfun
+endfun "}}}
 
 ""=============================================================================
 " Function: s:show_all_dos
@@ -121,6 +122,10 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
       let dos[i] = substitute(dos[i], '\s.*', '', '')
     endfor
     call filter(dos, "v:val =~ '^".pat."'")
+    if a:just_print
+      " we don't want to show all those <Plug> mappings
+      call filter(dos, "v:val !~ '^<Plug>'")
+    endif
   endif
 
   " no results
