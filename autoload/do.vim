@@ -122,7 +122,8 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
         \          group.keys_width : get(g:, 'vimdo_keys_width', 16)
   let desc_width = has_key(group, 'desc_width') ?
         \          group.desc_width : get(g:, 'vimdo_desc_width', 40)
-  let full_lhs   = get(g:, 'vimdo_print_full_lhs', 1)
+  let full_lhs   = get(g:, 'vimdo_print_full_lhs', 1) && !interactive &&
+        \          !get(group, 'arbitrary', 0)
 
   if has_key(group, 'arbitrary') && group.arbitrary
     let dos = s:get_maps(group)
