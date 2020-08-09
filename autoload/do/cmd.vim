@@ -105,6 +105,8 @@ fun! do#cmd#snippets()
     UltiSnipsEdit
   elseif exists('g:loaded_snips')
     SnipMateOpenSnippetFiles
+  elseif exists('g:loaded_vsnip')
+    VsnipOpenVsplit!
   else
     echo "[do.vim] No snippets plugin detected."
   endif
