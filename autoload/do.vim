@@ -17,21 +17,23 @@ fun! do#show(group, ...)
     echo '[do.vim] you must enter a mapping prefix'
     return
   endif
-  call s:init()
+  call s:init(0)
   let group = empty(a:group) ? get(g:, 'vimdo_default_prefix', 'do') : a:group
-  call s:show_all_dos(group, a:0 ? a:1 : 0, '', 0, 0)
+  call s:show_all_dos(group, a:0 ? a:1 : 0, '', 0, 'n')
 endfun "}}}
 
-fun! do#print(group, buffer) abort
+fun! do#print(prefix, can_filter, mode) abort
   " Entry point for Nmap command. {{{1
-  call s:init()
-  call s:show_all_dos(a:group, a:buffer, '', 0, 1)
+  call s:init(1 + a:can_filter)
+  let buf = match(a:prefix, '<buffer>') >= 0
+  let pre = substitute(a:prefix, '<buffer>', '', '')
+  call s:show_all_dos(pre, buf, '', 0, a:mode)
 endfun "}}}
 
 fun! do#menu(menu) abort
   " Can be used as inputlist() replacement.
-  call s:init()
-  return s:show_all_dos(a:menu, 0, '', 1, 0)
+  call s:init(0)
+  return s:show_all_dos(a:menu, 0, '', 1, 'n')
 endfun "}}}
 
 ""=============================================================================
@@ -43,12 +45,8 @@ endfun "}}}
 " @param filter: the applied filter, when redrawing
 ""=============================================================================
 ""
-fun! s:show_all_dos(group, buffer, filter, menu, just_print)
+fun! s:show_all_dos(group, buffer, filter, menu, mode)
   " Main function. {{{1
-  if index(['n', 'v', 'V', ''], mode()) < 0
-    return
-  endif
-
   if a:menu
     let default_label = get(g:, 'vimdo_default_menu_label', 'Choose: ')
     if type(a:group) == v:t_dict
@@ -80,7 +78,6 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
 
   let sep         = repeat('-', &columns - 10)
   let lab         = has_key(group, 'label') ?  pre."\t\t".group.label : pre
-  let mode        = mode() == 'n' ? 'n' : 'x'
   let show_file   = get(g:, 'vimdo_show_filename', 0)
   let with_filter = !empty(a:filter)
 
@@ -95,7 +92,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
   endif
 
   " just_print: simple display, no interaction
-  if a:just_print
+  if s:just_print
     let group.interactive = 0
     let group.simple = 1
     let group.show_rhs = 1
@@ -132,15 +129,15 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     let show_file = 0
   else
     redir => dos
-    silent! exe mode.'map '.pre
+    silent! exe a:mode.'map' pre
     redir END
     let dos = split(dos, '\n')
     for i in range(len(dos))
-      let dos[i] = substitute(dos[i], 'n  ', '', '')
+      let dos[i] = substitute(dos[i], a:mode.'  ', '', '')
       let dos[i] = substitute(dos[i], '\s.*', '', '')
     endfor
     call filter(dos, "v:val =~ '^".pat."'")
-    if a:just_print
+    if s:just_print && a:group !~ '\c<plug>'
       " we don't want to show all those <Plug> mappings
       call filter(dos, "v:val !~ '^<Plug>'")
     endif
@@ -162,7 +159,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
   let max_lhs_width = 0
   for do in dos
     if do ==# 'order' | continue | endif  " not a mapping, it's their order
-    let d = s:get_do(group, do, mode)
+    let d = s:get_do(group, do, a:mode)
     if empty(d) | continue | endif
     let custom = has_key(d, 'custom')
     if (a:buffer && !d.buffer) ||
@@ -182,7 +179,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     let flags .= d.buffer ? '@' : ''
 
     let key = do[strchars(pre):]
-    let file = show_file ? s:get_file(pre.key, mode) : ''
+    let file = show_file ? s:get_file(pre.key, a:mode) : ''
     let desc = !has_key(group, key) ? '' :
           \    custom ? d.description : group[key]
 
@@ -224,7 +221,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     echo "\n"
     for do in s:sort_dos(D, group)
       if !has_key(D, do) | continue | endif
-      let K = !a:menu && (a:just_print || full_lhs) ? a:group . do : do
+      let K = !a:menu && (s:just_print || full_lhs) ? a:group . do : do
       let K = s:trans_lhs(K)
       if space_left != total_space
         echohl WarningMsg   | echon  s:pad(K, keys_width)
@@ -252,7 +249,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     endif
     for do in s:sort_dos(D, group)
       if !has_key(D, do) | continue | endif
-      let K = !a:menu && (a:just_print || full_lhs) ? a:group . do : do
+      let K = !a:menu && (s:just_print || full_lhs) ? a:group . do : do
       let K = s:trans_lhs(K)
       echohl WarningMsg   | echo  s . s:pad(K, keys_width)
       echohl Special      | echon s:pad(D[do][0], desc_width)
@@ -273,9 +270,9 @@ fun! s:show_all_dos(group, buffer, filter, menu, just_print)
     echo group.label
     return nr2char(getchar())
   elseif interactive
-    call s:interactive(a:group, a:buffer)
-  elseif !a:just_print
-    call s:loop(a:group, a:buffer)
+    call s:interactive(a:group, a:buffer, a:mode)
+  elseif s:just_print != 1
+    call s:loop(a:group, a:buffer, a:mode)
   endif
 endfun "}}}
 
@@ -288,9 +285,10 @@ endfun "}}}
 
 let s:winOS = has('win32') || has('win16') || has('win64')
 
-fun! s:init()
+fun! s:init(just_print)
   " Set vimdoDesc highlight group. {{{1
   let s:current = '' " current typed key
+  let s:just_print = a:just_print
   if &background == 'light'
     hi link vimdoDesc String
   else
@@ -299,7 +297,7 @@ fun! s:init()
   endif
 endfun "}}}
 
-fun! s:loop(group, buffer)
+fun! s:loop(group, buffer, mode)
   " Get character from user, use it as filter or redraw/exit. {{{1
   " Same parameters as for the main command.
   if !( s:compact || s:simple )
@@ -310,14 +308,14 @@ fun! s:loop(group, buffer)
     call feedkeys("\<Esc>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:buffer, '', 0, 0)
+    call s:show_all_dos(a:group, a:buffer, '', 0, a:mode)
   else
     redraw!
-    call s:show_all_dos(a:group, a:buffer, nr2char(c), 0, 0)
+    call s:show_all_dos(a:group, a:buffer, nr2char(c), 0, a:mode)
   endif
 endfun "}}}
 
-fun! s:interactive(group, buffer)
+fun! s:interactive(group, buffer, mode)
   " Interactive mode: try to run a command for the matching entered key. "{{{1
   " Same parameters as for the main command.
   if !( s:compact || s:simple )
@@ -333,11 +331,11 @@ fun! s:interactive(group, buffer)
     call feedkeys("\<cr>", 'n')
   elseif c == 12
     redraw!
-    call s:show_all_dos(a:group, a:buffer, '', 0, 0)
+    call s:show_all_dos(a:group, a:buffer, '', 0, a:mode)
   else
     redraw!
     let s:current .= nr2char(c)
-    call s:show_all_dos(a:group, a:buffer, '', 0, 0)
+    call s:show_all_dos(a:group, a:buffer, '', 0, a:mode)
   endif
 endfun "}}}
 
@@ -367,7 +365,7 @@ endfun
 fun! s:get_file(map, mode)
   " Get file where the mapping is defined. {{{1
   redir => m
-  exe "silent! verbose ".a:mode."map ".a:map
+  exe "silent! verbose" a:mode."map" a:map
   redir END
   let m = split(m, '\n')
   try

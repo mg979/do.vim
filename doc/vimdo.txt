@@ -6,6 +6,7 @@ DO.VIM - TABLE OF CONTENTS                                    *do.vim* *vimdo*
 
   Introduction                                        |vimdo-introduction|
   Quick start                                         |vimdo-quick-start|
+  As ...map replacement                               |vimdo-print-mappings|
   As inputlist() replacement                          |vimdo-inputlist|
   Groups                                              |vimdo-groups|
   Options                                             |vimdo-options|
@@ -64,10 +65,26 @@ show <buffer> mappings:
     :ShowDos! g
 
 That's it for a basic usage.
-                                                                       *:Nmap*
-A little extra: the command `Nmap` is defined (if not already). It prints
-mappings as `:verbose nmap` would, but with a more compact formatting.
-Just as `ShowDos!`, `Nmap!` prints |<buffer>| mappings only.
+
+
+
+
+AS ...MAP REPLACEMENT                                   *vimdo-print-mappings*
+==============================================================================
+                                                       *:Nmap* *:Imap* *:Xmap*
+The commands `Nmap`, `Imap` and `Xmap` are defined (if not already). They
+print mappings as `:verbose [nxi]map` would, but with a more compact
+formatting.
+
+If you want to print <buffer> mappings, you have to type (for example):
+>
+  Nmap <buffer> [optional prefix]
+
+That is, just as you would do with the |:nmap| command.
+
+Filtering is disabled by default, but you can enable it with <bang>:
+>
+  Nmap! <buffer> [optional prefix]
 
 Finally, if you don't like the commands' names, you can redefine them.
 See |g:vimdo_showdos_command| and |g:vimdo_nmap_command|.
@@ -216,7 +233,7 @@ OPTIONS                                                        *vimdo-options*
                                                               *g:vimdo_simple*
   Default: 0~
 
-    Just show the mappings.
+    No header or frames, just the mappings.
 
                                                              *g:vimdo_compact*
   Default: 0~
@@ -244,12 +261,18 @@ OPTIONS                                                        *vimdo-options*
 
     If you want to change the prefix for the |vimdo-default-commands|.
 
-                            *g:vimdo_showdos_command*   *g:vimdo_nmap_command*
+                                                     *g:vimdo_showdos_command*
+                                                        *g:vimdo_nmap_command*
+                                                        *g:vimdo_imap_command*
+                                                        *g:vimdo_xmap_command*
+  Default: 'ShowDos', 'Nmap', 'Imap', 'Xmap'~
 
-    You can change the default name for the `ShowDos` and `Nmap` commands:
+    You can change the default name for the `ShowDos` and `[nxi]map` commands:
 >
       let g:vimdo_showdos_command = 'ShowMaps'
-      let g:vimdo_nmap_command = 'Mappings'
+      let g:vimdo_nmap_command = 'Nmaps'
+      let g:vimdo_imap_command = 'Imaps'
+      let g:vimdo_xmap_command = 'Xmaps'
 <
 
 

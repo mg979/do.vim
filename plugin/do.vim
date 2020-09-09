@@ -24,7 +24,11 @@ let s:ShowDos = get(g:, 'vimdo_showdos_command', 'ShowDos')
 exe 'silent! command -nargs=? -bang' s:ShowDos 'call do#show(<q-args>, <bang>0)'
 
 let s:Nmap = get(g:, 'vimdo_nmap_command', 'Nmap')
-exe 'silent! command -nargs=? -bang' s:Nmap 'call do#print(<q-args>, <bang>0)'
+exe 'silent! command -complete=mapping -nargs=? -bang' s:Nmap 'call do#print(<q-args>, <bang>0, "n")'
+let s:Imap = get(g:, 'vimdo_imap_command', 'Imap')
+exe 'silent! command -complete=mapping -nargs=? -bang' s:Imap 'call do#print(<q-args>, <bang>0, "i")'
+let s:Xmap = get(g:, 'vimdo_xmap_command', 'Xmap')
+exe 'silent! command -complete=mapping -nargs=? -bang' s:Xmap 'call do#print(<q-args>, <bang>0, "x")'
 
 if get(g:, 'vimdo_use_default_commands', 0)
   let g:vimdo_default_prefix = get(g:, 'vimdo_default_prefix', 'do')
