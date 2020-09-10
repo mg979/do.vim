@@ -128,10 +128,7 @@ fun! s:show_all_dos(group, buffer, filter, menu, mode)
     let pat = ''
     let show_file = 0
   else
-    redir => dos
-    silent! exe a:mode.'map' pre
-    redir END
-    let dos = split(dos, '\n')
+    let dos = split(execute(a:mode.'map '. pre, 'silent!'), '\n')
     for i in range(len(dos))
       let dos[i] = substitute(dos[i], a:mode.'  ', '', '')
       let dos[i] = substitute(dos[i], '\s.*', '', '')
@@ -364,10 +361,7 @@ endfun
 
 fun! s:get_file(map, mode)
   " Get file where the mapping is defined. {{{1
-  redir => m
-  exe "silent! verbose" a:mode."map" a:map
-  redir END
-  let m = split(m, '\n')
+  let m = split(execute("verbose " . a:mode."map " . a:map, 'silent!'), '\n')
   try
     for i in range(len(m))
       if match(m[i], escape(a:map, '~*\')) == 3
