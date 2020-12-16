@@ -49,7 +49,7 @@ endfun
 fun! s:wincolor()
   " Set window background color, if supported
   if &bg == 'dark'
-    hi DoWinColor guibg=#303030 ctermbg=236
+    hi DoWinColor guibg=#363636 ctermbg=237
   else
     hi DoWinColor guibg=#dadada ctermbg=7
   endif
