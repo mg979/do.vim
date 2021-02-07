@@ -43,6 +43,7 @@ fun! do#diff#saved()
   au BufEnter <buffer> if len(tabpagebuflist()) == 1 | bwipeout | diffoff | endif
   wincmd x
   redraw!
+  normal! zM`.
 endfun
 
 
