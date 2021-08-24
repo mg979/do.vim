@@ -40,10 +40,10 @@ fun! do#diff#saved()
 
   " set wincolor and autodelete temp buffer if last in tab
   call s:wincolor()
-  au BufEnter <buffer> if len(tabpagebuflist()) == 1 | bwipeout | diffoff | endif
+  au BufEnter <buffer> if len(tabpagebuflist()) == 1 | diffoff | quit | doautocmd CursorHold | endif
   wincmd x
   redraw!
-  normal! zM`.
+  silent! normal! zM`.
 endfun
 
 
