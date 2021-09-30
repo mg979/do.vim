@@ -174,8 +174,8 @@ endfun "}}}
 
 fun! do#cmd#syntax_attr()
   "{{{1
-  """Edited from Gary Holloway version:
-  """https://www.vim.org/scripts/script.php?script_id=383
+  "Edited from Gary Holloway version:
+  "https://www.vim.org/scripts/script.php?script_id=383
 
   let synid = ""
   let guifg = ""
@@ -247,6 +247,29 @@ fun! do#cmd#syntax_attr()
   endif
   echohl None
   silent! call repeat#set(":\<c-u>call do#cmd#syntax_attr()\<cr>", 1)
+endfun "}}}
+
+fun! do#cmd#colortw()
+  "{{{1
+  if exists('w:ccmatch')
+    call matchdelete(w:ccmatch)
+    unlet w:ccmatch
+    if exists('s:ccsearch')
+      if @/ == s:ccsearch
+        let @/ = s:ccoldsearch
+      endif
+      unlet s:ccoldsearch
+      unlet s:ccsearch
+    endif
+  else
+    let w:ccmatch = matchadd('Error', '\%>'. &tw .'c.*.$')
+    if !exists('s:ccoldsearch')
+      let s:ccoldsearch = @/
+    endif
+    let s:ccsearch = '\%>'. &tw .'c.*.$'
+    let @/ = s:ccsearch
+    normal! n
+  endif
 endfun "}}}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

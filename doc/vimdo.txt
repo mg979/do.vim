@@ -51,8 +51,8 @@ Say you have a bunch of mappngs that start with `g`, and you want to add some
 description, so that it will show up when you run the command above.
 You create a group for `g`, and you write the descriptions inside:
 >
-  let g:vimdo = {}
-  let g:vimdo.g = {}
+  let get(g:, 'vimdo', {})
+  let g:vimdo.g = get(g:vimdo, 'g', {})
   let g:vimdo.g.cc = 'comment line toggle'
   let g:vimdo.g.ot = 'open terminal at current file position'
 
@@ -149,9 +149,14 @@ Set very large tabs (table mode): >
 Trim whitespaces (and print their number): >
   nnoremap dows   :m`:keeppatterns %s/\s\+$//gn<CR>:keeppatterns silent! %s/\s\+$//e<CR>``
 
-You initialize the `g:vimdo` dict (if you didn't already!):
+You initialize the `g:vimdo` dict (if you didn't already...):
 >
-  let g:vimdo = {}
+  if !exists('g:vimdo')
+    let g:vimdo = {}
+  endif
+
+Note: it's better to check for variable existence, so that you can define new
+groups anywhere, without risking to lose the already defined ones.
 
 Then register descriptions for the mappings (see that the mapping prefix isn't
 repeated):
@@ -194,16 +199,15 @@ You initialize the new group:
 
 Inside the group dictionary you can see:
 - group options (see |vimdo-group|)
-- pairs (continuation of) mapping/description
+- pairs of mapping/description
 
 Finally you create a mapping to show your group:
 >
   nnoremap \g? :ShowDos \g<cr>
 
-------------------------------------------------------------------------------
 
-|Important|: if you create groups for special keys, they should be
-capitalized when you define the group:
+Note: if you create groups for special keys, they should be capitalized when
+you define the group:
 >
   let g:vimdo['<Space>'] = { 'label' : '<Space> mappings', ... }
 
@@ -390,18 +394,19 @@ If NOT using the default prefix, these mappings will be:
 
 These are the default commands:
 
-`doft`  ->  do open ftplugin file (custom preferred)
-`dofT`  ->  do open ftplugin file (stock vim/nvim only)
-`dosn`  ->  do open snippets file for the current filetype
-`dorf`  ->  do reindent file
-`docf`  ->  do copy file (backup)
-`dodo`  ->  do diff other file (in next window)
-`dods`  ->  do diff with saved
-`dout`  ->  do update tags (runs `ctags -R .`, or `b:ctags_cmd` if defined)
-`dovp`  ->  do vim profiling (first time activates, second time stops and quits)
-`doss`  ->  do print syntax infos for word under cursor
-`doec`  ->  do echo color infos
-`dofcr` ->  do find CR (find/correct files with CRLF line endings)
+`doft`  ->  open user ftplugin file
+`dofT`  ->  open default ftplugin file
+`dosn`  ->  open snippets file for the current filetype
+`dorf`  ->  reindent file
+`docc`  ->  highlight text over &textwidth
+`docf`  ->  copy file (backup)
+`dodo`  ->  diff other file (in next window)
+`dods`  ->  diff with saved
+`dout`  ->  update tags (runs `ctags -R .`, or `b:ctags_cmd` if defined)
+`dovp`  ->  vim profiling (first time activates, second time stops and quits)
+`doss`  ->  print syntax infos for word under cursor
+`doec`  ->  echo color infos
+`dofcr` ->  find CR (find/correct files with CRLF line endings)
 
 If you don't want all defaults, but want some of them, add them to your `vimrc`:
 >
@@ -409,6 +414,7 @@ If you don't want all defaults, but want some of them, add them to your `vimrc`:
   nnoremap dofT  :call do#cmd#open_ftplugin(1)<cr>
   nnoremap dosn  :call do#cmd#snippets()<cr>
   nnoremap dorf  :call do#cmd#reindent_file()<cr>
+  nnoremap docc  :call do#cmd#colortw()<cr>
   nnoremap docf  :call do#cmd#copy_file()<cr>
   nnoremap dodo  :call do#diff#other()<cr>
   nnoremap dods  :call do#diff#saved()<cr>

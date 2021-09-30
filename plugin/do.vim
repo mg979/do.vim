@@ -38,6 +38,7 @@ if get(g:, 'vimdo_use_default_commands', 0)
   exe 'nnoremap <silent> '.s:p.'do  :call do#diff#other()<cr>'
   exe 'nnoremap <silent> '.s:p.'ds  :call do#diff#saved()<cr>'
   exe 'nnoremap <silent> '.s:p.'ec  :call do#color#echo()<cr>'
+  exe 'nnoremap <silent> '.s:p.'cc  :call do#cmd#colortw()<cr>'
   exe 'nnoremap <silent> '.s:p.'fT  :call do#cmd#open_ftplugin(1)<cr>'
   exe 'nnoremap <silent> '.s:p.'ft  :call do#cmd#open_ftplugin()<cr>'
   exe 'nnoremap <silent> '.s:p.'fcr :call do#cmd#find_crlf(1, "")<cr>'
@@ -64,6 +65,7 @@ fun! do#default_grp() abort
         \ 'do':  'diff other',
         \ 'ds':  'diff saved',
         \ 'ec':  'echo color',
+        \ 'cc':  'highlight text over &tw',
         \ 'ft':  'ftplugin file',
         \ 'fT':  'ftplugin file (default)',
         \ 'fcr': 'find files with CRLF endings',
