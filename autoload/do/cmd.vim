@@ -101,13 +101,13 @@ endfun "}}}
 
 fun! do#cmd#snippets()
   "{{{1
-  if exists('g:did_plugin_ultisnips')
+  if exists(':UltiSnipsEdit')
     UltiSnipsEdit
-  elseif exists('g:loaded_snips')
+  elseif exists(':SnipMateOpenSnippetFiles')
     SnipMateOpenSnippetFiles
-  elseif exists('g:loaded_vsnip')
+  elseif exists(':VsnipOpenVsplit!')
     VsnipOpenVsplit!
-  elseif exists('g:loaded_snippets')
+  elseif exists(':Snippets')
     Snippets
   else
     echo "[do.vim] No snippets plugin detected."
