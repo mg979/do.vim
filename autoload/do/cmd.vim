@@ -58,7 +58,11 @@ fun! do#cmd#open_ftplugin(...)
     call filter(scripts, 'v:val !~ '''.pat.'''')
     call extend(scripts, default)
   else
-    let valid = has('win32') ?
+    let [c, d] = [stdpath('data') .. '/site', stdpath('config')]
+    let valid =
+          \has('nvim') ?
+          \ [c .. '/after', c .. '/ftplugin', d .. '/after', d .. '/ftplugin'] :
+          \has('win32') ?
           \ ['~\vimfiles\after', '~\vimfiles\ftplugin'] :
           \ ['~/.vim/after',     '~/.vim/ftplugin']
     call map(valid, 'resolve(fnamemodify(v:val, ":p"))')
